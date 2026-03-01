@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAFAF8;
+  --foreground: #2D2D2D;
+  --primary: #C5A55A;
+  --primary-dark: #A8893E;
+  --primary-light: #E8D9A8;
+  --primary-bg: #F5F0E1;
+  --border: #E5E2DA;
+  --muted: #8A8A8A;
+  --card-bg: #FFFFFF;
+  --sidebar-bg: #2D2D2D;
+  --sidebar-text: #E5E2DA;
+  --sidebar-active: #C5A55A;
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --danger: #E53935;
+  --info: #2196F3;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-primary-bg: var(--primary-bg);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-card-bg: var(--card-bg);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Sticky table header */
+.table-sticky-header thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--card-bg);
 }
