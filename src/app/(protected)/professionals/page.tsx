@@ -54,6 +54,7 @@ export default function ProfessionalsPage() {
     const { data } = await supabase
       .from('professionals')
       .select('id, business_name, primary_specialty, primary_first_name, primary_last_name, primary_phone, primary_email, business_city, business_state')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (data) {
@@ -105,7 +106,13 @@ export default function ProfessionalsPage() {
     }
 
     setSaving(true);
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setPhoneError('Could not load your profile. Please log out and log back in.');
+      setSaving(false);
+      return;
+    }
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (profileError || !profile) {
       setPhoneError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
@@ -165,7 +172,10 @@ export default function ProfessionalsPage() {
   };
 
   const handleDelete = async (profId: string) => {
-    const { error } = await supabase.from('professionals').delete().eq('id', profId);
+    const { error } = await supabase
+      .from('professionals')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', profId);
     if (!error) {
       setShowDeleteModal(null);
       loadProfessionals();

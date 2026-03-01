@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
 import Modal from '@/components/ui/Modal';
+import { isValidUUID } from '@/lib/utils';
 
 const PROJECT_TYPES = [
   { value: 'new_construction', label: 'New Construction' },
@@ -254,7 +255,9 @@ export default function ProjectDetailPage() {
   }, [loadProject]);
 
   const handleAddNote = async (note: string) => {
-    const { data: profile } = await supabase.from('profiles').select('tenant_id').limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (!profile) return;
 
     const { data: newNote } = await supabase
@@ -455,6 +458,7 @@ export default function ProjectDetailPage() {
     }
   };
 
+  if (!isValidUUID(projectId)) return <p className="text-muted text-sm">Project not found.</p>;
   if (loading) return <p className="text-muted text-sm">Loading...</p>;
   if (!project) return <p className="text-muted text-sm">Project not found.</p>;
 

@@ -72,3 +72,24 @@ export function formatAddress(parts: {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+// UUID validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
+// Sanitize auth error messages to prevent information leakage
+export function sanitizeAuthError(errorMessage: string): string {
+  const msg = errorMessage.toLowerCase();
+  if (msg.includes('invalid login') || msg.includes('invalid email') || msg.includes('invalid password') || msg.includes('user not found')) {
+    return 'Invalid email or password.';
+  }
+  if (msg.includes('rate limit') || msg.includes('too many')) {
+    return 'Too many attempts. Please try again later.';
+  }
+  if (msg.includes('email not confirmed')) {
+    return 'Please confirm your email address first.';
+  }
+  return 'An error occurred. Please try again.';
+}

@@ -66,6 +66,7 @@ export default function ProjectsPage() {
     const { data, error } = await supabase
       .from('projects')
       .select('id, name, status, project_type, site_city, site_state, created_on, client_id, description, building_plan_summary')
+      .is('deleted_at', null)
       .order('created_on', { ascending: false });
 
     if (error) {
@@ -145,7 +146,13 @@ export default function ProjectsPage() {
     }
     setSaving(true);
 
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setFormError('Could not load your profile. Please log out and log back in.');
+      setSaving(false);
+      return;
+    }
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (profileError || !profile) {
       setFormError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
@@ -179,7 +186,10 @@ export default function ProjectsPage() {
   };
 
   const handleDelete = async (projectId: string) => {
-    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    const { error } = await supabase
+      .from('projects')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', projectId);
     if (error) {
       setFormError('Failed to delete project. Please try again.');
     } else {

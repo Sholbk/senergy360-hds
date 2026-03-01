@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { sanitizeAuthError } from '@/lib/utils';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
   const router = useRouter();
   const [supabase] = useState(() => createClient());
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+    });
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,13 +41,37 @@ export default function ResetPasswordPage() {
     });
 
     if (updateError) {
-      setError(updateError.message);
+      setError(sanitizeAuthError(updateError.message));
     } else {
       router.push('/dashboard');
       router.refresh();
     }
     setLoading(false);
   };
+
+  if (hasSession === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-md p-8 bg-card-bg rounded-lg shadow-lg border border-border text-center">
+          <p className="text-muted">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-md p-8 bg-card-bg rounded-lg shadow-lg border border-border text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Link Expired</h1>
+          <p className="text-muted mb-4">This password reset link has expired or is invalid. Please request a new one.</p>
+          <a href="/forgot-password" className="text-primary hover:text-primary-dark">
+            Request a new reset link
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

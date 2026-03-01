@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { sanitizeAuthError } from '@/lib/utils';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ export default function ForgotPasswordPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setError(sanitizeAuthError(error.message));
     } else {
       setSent(true);
     }

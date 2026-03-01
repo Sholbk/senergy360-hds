@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
-import { PHONE_REGEX } from '@/lib/utils';
+import { PHONE_REGEX, isValidUUID } from '@/lib/utils';
 
 interface ProfessionalDetail {
   id: string;
@@ -244,7 +244,9 @@ export default function ProfessionalDetailPage() {
   };
 
   const handleAddNote = async (note: string) => {
-    const { data: profile } = await supabase.from('profiles').select('tenant_id').limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (!profile) return;
 
     const { data: newNote } = await supabase
@@ -261,6 +263,7 @@ export default function ProfessionalDetailPage() {
     }
   };
 
+  if (!isValidUUID(professionalId)) return <p className="text-muted text-sm">Professional not found.</p>;
   if (loading) return <p className="text-muted text-sm">Loading...</p>;
   if (!professional) return <p className="text-muted text-sm">Professional not found.</p>;
 

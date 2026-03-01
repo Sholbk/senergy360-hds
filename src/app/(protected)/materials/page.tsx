@@ -368,7 +368,9 @@ function MaterialsPageContent() {
   // Add note to material
   const handleAddNote = async (note: string) => {
     if (!selectedMaterial) return;
-    const { data: profile } = await supabase.from('profiles').select('tenant_id').limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (!profile) return;
 
     const { data: newNote } = await supabase

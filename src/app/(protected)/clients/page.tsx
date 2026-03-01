@@ -94,7 +94,13 @@ export default function ClientsPage() {
     }
 
     setSaving(true);
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setPhoneError('Could not load your profile. Please log out and log back in.');
+      setSaving(false);
+      return;
+    }
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (profileError || !profile) {
       setPhoneError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
