@@ -325,6 +325,7 @@ export default function ProjectsPage() {
             <input
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -365,6 +366,7 @@ export default function ProjectsPage() {
               <input
                 value={formData.otherDescription}
                 onChange={(e) => setFormData({ ...formData, otherDescription: e.target.value })}
+                maxLength={200}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -376,6 +378,7 @@ export default function ProjectsPage() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
+              maxLength={5000}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
             />
           </div>
@@ -386,6 +389,7 @@ export default function ProjectsPage() {
               value={formData.buildingPlanSummary}
               onChange={(e) => setFormData({ ...formData, buildingPlanSummary: e.target.value })}
               rows={3}
+              maxLength={5000}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
             />
           </div>
@@ -398,12 +402,14 @@ export default function ProjectsPage() {
               placeholder="Address Line 1"
               value={formData.siteAddressLine1}
               onChange={(e) => setFormData({ ...formData, siteAddressLine1: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <input
               placeholder="Address Line 2"
               value={formData.siteAddressLine2}
               onChange={(e) => setFormData({ ...formData, siteAddressLine2: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <div className="grid grid-cols-3 gap-3">
@@ -411,18 +417,21 @@ export default function ProjectsPage() {
                 placeholder="City"
                 value={formData.siteCity}
                 onChange={(e) => setFormData({ ...formData, siteCity: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <input
                 placeholder="State"
                 value={formData.siteState}
                 onChange={(e) => setFormData({ ...formData, siteState: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <input
                 placeholder="ZIP"
                 value={formData.sitePostalCode}
                 onChange={(e) => setFormData({ ...formData, sitePostalCode: e.target.value })}
+                maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>

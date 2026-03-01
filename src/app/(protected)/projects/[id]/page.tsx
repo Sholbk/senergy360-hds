@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
 import Modal from '@/components/ui/Modal';
-import { isValidUUID } from '@/lib/utils';
+import { isValidUUID, VALID_STATUSES } from '@/lib/utils';
 
 const PROJECT_TYPES = [
   { value: 'new_construction', label: 'New Construction' },
@@ -232,7 +232,7 @@ export default function ProjectDetailPage() {
     // Load notes
     const { data: notesData } = await supabase
       .from('private_notes')
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
 
@@ -263,7 +263,7 @@ export default function ProjectDetailPage() {
     const { data: newNote } = await supabase
       .from('private_notes')
       .insert({ tenant_id: profile.tenant_id, note, project_id: projectId })
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .single();
 
     if (newNote) {
@@ -276,6 +276,7 @@ export default function ProjectDetailPage() {
 
   const updateStatus = async () => {
     if (!newStatus || !project) return;
+    if (!VALID_STATUSES.includes(newStatus as typeof VALID_STATUSES[number])) return;
     const updates: Record<string, unknown> = { status: newStatus };
     if (newStatus === 'in_progress') updates.started_on = new Date().toISOString();
     if (newStatus === 'completed') updates.completed_on = new Date().toISOString();
@@ -719,6 +720,7 @@ export default function ProjectDetailPage() {
               type="text"
               value={editForm.name}
               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              maxLength={200}
               className={inputClass}
             />
           </div>
@@ -743,6 +745,7 @@ export default function ProjectDetailPage() {
                 type="text"
                 value={editForm.projectTypeOtherDescription}
                 onChange={(e) => setEditForm({ ...editForm, projectTypeOtherDescription: e.target.value })}
+                maxLength={200}
                 className={inputClass}
               />
             </div>
@@ -768,6 +771,7 @@ export default function ProjectDetailPage() {
               value={editForm.description}
               onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
               rows={3}
+              maxLength={5000}
               className={inputClass}
             />
           </div>
@@ -778,6 +782,7 @@ export default function ProjectDetailPage() {
               value={editForm.buildingPlanSummary}
               onChange={(e) => setEditForm({ ...editForm, buildingPlanSummary: e.target.value })}
               rows={3}
+              maxLength={5000}
               className={inputClass}
             />
           </div>
@@ -788,6 +793,7 @@ export default function ProjectDetailPage() {
               type="text"
               value={editForm.siteAddressLine1}
               onChange={(e) => setEditForm({ ...editForm, siteAddressLine1: e.target.value })}
+              maxLength={200}
               className={inputClass}
             />
           </div>
@@ -798,6 +804,7 @@ export default function ProjectDetailPage() {
               type="text"
               value={editForm.siteAddressLine2}
               onChange={(e) => setEditForm({ ...editForm, siteAddressLine2: e.target.value })}
+              maxLength={200}
               className={inputClass}
             />
           </div>
@@ -809,6 +816,7 @@ export default function ProjectDetailPage() {
                 type="text"
                 value={editForm.siteCity}
                 onChange={(e) => setEditForm({ ...editForm, siteCity: e.target.value })}
+                maxLength={100}
                 className={inputClass}
               />
             </div>
@@ -818,6 +826,7 @@ export default function ProjectDetailPage() {
                 type="text"
                 value={editForm.siteState}
                 onChange={(e) => setEditForm({ ...editForm, siteState: e.target.value })}
+                maxLength={100}
                 className={inputClass}
               />
             </div>
@@ -827,6 +836,7 @@ export default function ProjectDetailPage() {
                 type="text"
                 value={editForm.sitePostalCode}
                 onChange={(e) => setEditForm({ ...editForm, sitePostalCode: e.target.value })}
+                maxLength={20}
                 className={inputClass}
               />
             </div>
@@ -915,6 +925,7 @@ export default function ProjectDetailPage() {
               type="text"
               value={materialNotes}
               onChange={(e) => setMaterialNotes(e.target.value)}
+              maxLength={500}
               placeholder="Optional notes..."
               className={inputClass}
             />
@@ -965,6 +976,7 @@ export default function ProjectDetailPage() {
               type="text"
               value={clientMaterialNotes}
               onChange={(e) => setClientMaterialNotes(e.target.value)}
+              maxLength={500}
               placeholder="Optional notes..."
               className={inputClass}
             />

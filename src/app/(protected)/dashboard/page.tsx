@@ -7,7 +7,7 @@ export default async function DashboardPage() {
   // Fetch counts
   const [clientsResult, projectsResult, materialsResult] = await Promise.all([
     supabase.from('clients').select('id', { count: 'exact', head: true }),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).neq('status', 'completed'),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).neq('status', 'completed').is('deleted_at', null),
     supabase.from('materials').select('id', { count: 'exact', head: true }),
   ]);
 
@@ -26,6 +26,7 @@ export default async function DashboardPage() {
   const { data: recentProjects } = await supabase
     .from('projects')
     .select('id, name, status, client_id, clients(primary_first_name, primary_last_name)')
+    .is('deleted_at', null)
     .order('created_on', { ascending: false })
     .limit(5);
 

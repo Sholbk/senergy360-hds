@@ -1,10 +1,31 @@
-// Phone number regex: allows +, digits, spaces, dashes, parentheses
-export const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\./0-9]*$/;
+// Phone number regex: allows +, digits, spaces, dashes, parentheses (max 20 trailing chars)
+export const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]{0,20}$/;
 
 // Validate phone number format
 export function isValidPhone(phone: string): boolean {
+  if (phone.length > 30) return false;
   return PHONE_REGEX.test(phone);
 }
+
+// Email validation
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function isValidEmail(email: string): boolean {
+  return email.length <= 254 && EMAIL_REGEX.test(email);
+}
+
+// URL protocol validation (only http/https)
+export function isValidUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+// Valid project statuses
+export const VALID_STATUSES = ['draft', 'in_progress', 'completed'] as const;
 
 // Compute subcategory display numeral (e.g., "3.7")
 export function getSubCategoryNumeral(

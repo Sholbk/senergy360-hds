@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState, useCallback, useMemo, useRef } from 'rea
 import { createClient } from '@/lib/supabase/client';
 import { useSearchParams } from 'next/navigation';
 import type { MainCategory } from '@/types';
-import { formatMainCategoryDisplay } from '@/lib/utils';
+import { formatMainCategoryDisplay, isValidUrl } from '@/lib/utils';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
@@ -251,7 +251,7 @@ function MaterialsPageContent() {
     // Load private notes
     const { data: notes } = await supabase
       .from('private_notes')
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .eq('material_id', mat.id)
       .order('created_at', { ascending: false });
 
@@ -270,6 +270,9 @@ function MaterialsPageContent() {
   // Save material (add or edit)
   const saveMaterial = async (isNew: boolean) => {
     if (!formData.name.trim()) return;
+    if (formData.url.trim() && !isValidUrl(formData.url.trim())) {
+      return;
+    }
     setSaving(true);
 
     if (isNew) {
@@ -380,7 +383,7 @@ function MaterialsPageContent() {
         note,
         material_id: selectedMaterial.id,
       })
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .single();
 
     if (newNote) {
@@ -641,6 +644,7 @@ function MaterialForm({
         <input
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          maxLength={200}
           className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           required
         />
@@ -651,6 +655,7 @@ function MaterialForm({
         <input
           value={formData.manufacturer}
           onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+          maxLength={200}
           className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
@@ -696,6 +701,7 @@ function MaterialForm({
           value={formData.primaryUse}
           onChange={(e) => setFormData({ ...formData, primaryUse: e.target.value })}
           rows={3}
+          maxLength={2000}
           className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
         />
       </div>
@@ -706,6 +712,7 @@ function MaterialForm({
           value={formData.keyBenefits}
           onChange={(e) => setFormData({ ...formData, keyBenefits: e.target.value })}
           rows={3}
+          maxLength={2000}
           className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
         />
       </div>
@@ -716,6 +723,7 @@ function MaterialForm({
           value={formData.url}
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
           type="url"
+          maxLength={2048}
           className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>

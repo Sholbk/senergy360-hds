@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
-import { PHONE_REGEX } from '@/lib/utils';
+import { PHONE_REGEX, isValidEmail } from '@/lib/utils';
 import Link from 'next/link';
 
 interface ClientRow {
@@ -90,6 +90,16 @@ export default function ClientsPage() {
 
     if (formData.primaryPhone && !PHONE_REGEX.test(formData.primaryPhone)) {
       setPhoneError('Invalid phone number format');
+      return;
+    }
+
+    if (formData.primaryEmail && !isValidEmail(formData.primaryEmail)) {
+      setPhoneError('Invalid email format');
+      return;
+    }
+
+    if (formData.secondaryPhone && !PHONE_REGEX.test(formData.secondaryPhone)) {
+      setPhoneError('Invalid secondary phone number format');
       return;
     }
 
@@ -224,6 +234,7 @@ export default function ClientsPage() {
               <input
                 value={formData.primaryFirstName}
                 onChange={(e) => setFormData({ ...formData, primaryFirstName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
@@ -235,6 +246,7 @@ export default function ClientsPage() {
               <input
                 value={formData.primaryLastName}
                 onChange={(e) => setFormData({ ...formData, primaryLastName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
@@ -247,6 +259,7 @@ export default function ClientsPage() {
                   setFormData({ ...formData, primaryPhone: e.target.value });
                   setPhoneError('');
                 }}
+                maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               {phoneError && <p className="text-xs text-danger mt-1">{phoneError}</p>}
@@ -257,6 +270,7 @@ export default function ClientsPage() {
                 value={formData.primaryEmail}
                 onChange={(e) => setFormData({ ...formData, primaryEmail: e.target.value })}
                 type="email"
+                maxLength={254}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -269,6 +283,7 @@ export default function ClientsPage() {
               <input
                 value={formData.secondaryFirstName}
                 onChange={(e) => setFormData({ ...formData, secondaryFirstName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -277,6 +292,7 @@ export default function ClientsPage() {
               <input
                 value={formData.secondaryLastName}
                 onChange={(e) => setFormData({ ...formData, secondaryLastName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -288,12 +304,14 @@ export default function ClientsPage() {
               placeholder="Address Line 1"
               value={formData.billingAddressLine1}
               onChange={(e) => setFormData({ ...formData, billingAddressLine1: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <input
               placeholder="Address Line 2"
               value={formData.billingAddressLine2}
               onChange={(e) => setFormData({ ...formData, billingAddressLine2: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <div className="grid grid-cols-3 gap-3">
@@ -301,18 +319,21 @@ export default function ClientsPage() {
                 placeholder="City"
                 value={formData.billingCity}
                 onChange={(e) => setFormData({ ...formData, billingCity: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <input
                 placeholder="State"
                 value={formData.billingState}
                 onChange={(e) => setFormData({ ...formData, billingState: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <input
                 placeholder="ZIP"
                 value={formData.billingPostalCode}
                 onChange={(e) => setFormData({ ...formData, billingPostalCode: e.target.value })}
+                maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>

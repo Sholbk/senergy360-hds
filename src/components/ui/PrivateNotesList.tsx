@@ -19,8 +19,10 @@ export default function PrivateNotesList({
   const [newNote, setNewNote] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const MAX_NOTE_LENGTH = 2000;
+
   const handleSave = async () => {
-    if (!newNote.trim()) return;
+    if (!newNote.trim() || newNote.trim().length > MAX_NOTE_LENGTH) return;
     setSaving(true);
     try {
       await onAddNote(newNote.trim());
@@ -75,8 +77,10 @@ export default function PrivateNotesList({
           onChange={(e) => setNewNote(e.target.value)}
           placeholder="Enter your note..."
           rows={4}
+          maxLength={MAX_NOTE_LENGTH}
           className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
         />
+        <p className="text-xs text-muted mt-1">{newNote.length}/{MAX_NOTE_LENGTH}</p>
         <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={() => setIsModalOpen(false)}

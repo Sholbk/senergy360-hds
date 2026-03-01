@@ -34,6 +34,11 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      return;
+    }
+
     setLoading(true);
 
     const { error: updateError } = await supabase.auth.updateUser({
@@ -95,6 +100,7 @@ export default function ResetPasswordPage() {
             <input
               id="password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -111,6 +117,7 @@ export default function ResetPasswordPage() {
             <input
               id="confirmPassword"
               type="password"
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

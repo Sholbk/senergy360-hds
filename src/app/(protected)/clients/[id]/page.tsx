@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
-import { PHONE_REGEX, isValidUUID } from '@/lib/utils';
+import { PHONE_REGEX, isValidEmail, isValidUUID } from '@/lib/utils';
 
 interface ClientDetail {
   id: string;
@@ -72,7 +72,7 @@ export default function ClientDetailPage() {
   const loadClient = useCallback(async () => {
     const { data } = await supabase
       .from('clients')
-      .select('*')
+      .select('id, primary_first_name, primary_last_name, primary_phone, primary_email, secondary_first_name, secondary_last_name, secondary_phone, secondary_email, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country')
       .eq('id', clientId)
       .single();
 
@@ -106,7 +106,7 @@ export default function ClientDetailPage() {
 
     const { data: notesData } = await supabase
       .from('private_notes')
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .eq('client_id', clientId)
       .order('created_at', { ascending: false });
 
@@ -159,6 +159,14 @@ export default function ClientDetailPage() {
       setEditError('Invalid phone number format.');
       return;
     }
+    if (editData.primaryEmail && !isValidEmail(editData.primaryEmail)) {
+      setEditError('Invalid email format.');
+      return;
+    }
+    if (editData.secondaryPhone && !PHONE_REGEX.test(editData.secondaryPhone)) {
+      setEditError('Invalid secondary phone number format.');
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from('clients')
@@ -198,7 +206,7 @@ export default function ClientDetailPage() {
     const { data: newNote } = await supabase
       .from('private_notes')
       .insert({ tenant_id: profile.tenant_id, note, client_id: clientId })
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .single();
 
     if (newNote) {
@@ -326,6 +334,7 @@ export default function ClientDetailPage() {
               <input
                 value={editData.primaryFirstName}
                 onChange={(e) => setEditData({ ...editData, primaryFirstName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -336,6 +345,7 @@ export default function ClientDetailPage() {
               <input
                 value={editData.primaryLastName}
                 onChange={(e) => setEditData({ ...editData, primaryLastName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -344,6 +354,7 @@ export default function ClientDetailPage() {
               <input
                 value={editData.primaryPhone}
                 onChange={(e) => setEditData({ ...editData, primaryPhone: e.target.value })}
+                maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -353,6 +364,7 @@ export default function ClientDetailPage() {
                 value={editData.primaryEmail}
                 onChange={(e) => setEditData({ ...editData, primaryEmail: e.target.value })}
                 type="email"
+                maxLength={254}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -365,6 +377,7 @@ export default function ClientDetailPage() {
               <input
                 value={editData.secondaryFirstName}
                 onChange={(e) => setEditData({ ...editData, secondaryFirstName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -373,6 +386,7 @@ export default function ClientDetailPage() {
               <input
                 value={editData.secondaryLastName}
                 onChange={(e) => setEditData({ ...editData, secondaryLastName: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -381,6 +395,7 @@ export default function ClientDetailPage() {
               <input
                 value={editData.secondaryPhone}
                 onChange={(e) => setEditData({ ...editData, secondaryPhone: e.target.value })}
+                maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -390,6 +405,7 @@ export default function ClientDetailPage() {
                 value={editData.secondaryEmail}
                 onChange={(e) => setEditData({ ...editData, secondaryEmail: e.target.value })}
                 type="email"
+                maxLength={254}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -401,12 +417,14 @@ export default function ClientDetailPage() {
               placeholder="Address Line 1"
               value={editData.billingAddressLine1}
               onChange={(e) => setEditData({ ...editData, billingAddressLine1: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <input
               placeholder="Address Line 2"
               value={editData.billingAddressLine2}
               onChange={(e) => setEditData({ ...editData, billingAddressLine2: e.target.value })}
+              maxLength={200}
               className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <div className="grid grid-cols-3 gap-3">
@@ -414,18 +432,21 @@ export default function ClientDetailPage() {
                 placeholder="City"
                 value={editData.billingCity}
                 onChange={(e) => setEditData({ ...editData, billingCity: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <input
                 placeholder="State"
                 value={editData.billingState}
                 onChange={(e) => setEditData({ ...editData, billingState: e.target.value })}
+                maxLength={100}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <input
                 placeholder="ZIP"
                 value={editData.billingPostalCode}
                 onChange={(e) => setEditData({ ...editData, billingPostalCode: e.target.value })}
+                maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
