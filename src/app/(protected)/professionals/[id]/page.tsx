@@ -527,6 +527,7 @@ export default function ProfessionalDetailPage() {
           <div className="space-y-3">
             <input
               placeholder="Address Line 1"
+              aria-label="Address Line 1"
               value={editData.businessAddressLine1}
               onChange={(e) => setEditData({ ...editData, businessAddressLine1: e.target.value })}
               maxLength={200}
@@ -534,6 +535,7 @@ export default function ProfessionalDetailPage() {
             />
             <input
               placeholder="Address Line 2"
+              aria-label="Address Line 2"
               value={editData.businessAddressLine2}
               onChange={(e) => setEditData({ ...editData, businessAddressLine2: e.target.value })}
               maxLength={200}
@@ -542,6 +544,7 @@ export default function ProfessionalDetailPage() {
             <div className="grid grid-cols-3 gap-3">
               <input
                 placeholder="City"
+                aria-label="City"
                 value={editData.businessCity}
                 onChange={(e) => setEditData({ ...editData, businessCity: e.target.value })}
                 maxLength={100}
@@ -549,6 +552,7 @@ export default function ProfessionalDetailPage() {
               />
               <input
                 placeholder="State"
+                aria-label="State"
                 value={editData.businessState}
                 onChange={(e) => setEditData({ ...editData, businessState: e.target.value })}
                 maxLength={100}
@@ -556,6 +560,7 @@ export default function ProfessionalDetailPage() {
               />
               <input
                 placeholder="ZIP"
+                aria-label="ZIP"
                 value={editData.businessPostalCode}
                 onChange={(e) => setEditData({ ...editData, businessPostalCode: e.target.value })}
                 maxLength={20}

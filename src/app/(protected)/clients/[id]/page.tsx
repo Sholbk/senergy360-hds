@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
-import { PHONE_REGEX, isValidEmail, isValidUUID } from '@/lib/utils';
+import { PHONE_REGEX, isValidEmail, isValidUUID, STATUS_LABELS, STATUS_STYLES } from '@/lib/utils';
 
 interface ClientDetail {
   id: string;
@@ -221,11 +221,7 @@ export default function ClientDetailPage() {
   if (loading) return <p className="text-muted text-sm">Loading...</p>;
   if (!client) return <p className="text-muted text-sm">Client not found.</p>;
 
-  const statusStyles: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-700',
-    in_progress: 'bg-green-100 text-green-700',
-    completed: 'bg-blue-100 text-blue-700',
-  };
+  // Use shared STATUS_STYLES from utils
 
   return (
     <div>
@@ -305,8 +301,8 @@ export default function ClientDetailPage() {
                 >
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-foreground">{project.name}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusStyles[project.status] || ''}`}>
-                      {project.status === 'in_progress' ? 'In Progress' : project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLES[project.status] || ''}`}>
+                      {STATUS_LABELS[project.status] || project.status}
                     </span>
                   </div>
                 </Link>
@@ -415,6 +411,7 @@ export default function ClientDetailPage() {
           <div className="space-y-3">
             <input
               placeholder="Address Line 1"
+              aria-label="Address Line 1"
               value={editData.billingAddressLine1}
               onChange={(e) => setEditData({ ...editData, billingAddressLine1: e.target.value })}
               maxLength={200}
@@ -422,6 +419,7 @@ export default function ClientDetailPage() {
             />
             <input
               placeholder="Address Line 2"
+              aria-label="Address Line 2"
               value={editData.billingAddressLine2}
               onChange={(e) => setEditData({ ...editData, billingAddressLine2: e.target.value })}
               maxLength={200}
@@ -430,6 +428,7 @@ export default function ClientDetailPage() {
             <div className="grid grid-cols-3 gap-3">
               <input
                 placeholder="City"
+                aria-label="City"
                 value={editData.billingCity}
                 onChange={(e) => setEditData({ ...editData, billingCity: e.target.value })}
                 maxLength={100}
@@ -437,6 +436,7 @@ export default function ClientDetailPage() {
               />
               <input
                 placeholder="State"
+                aria-label="State"
                 value={editData.billingState}
                 onChange={(e) => setEditData({ ...editData, billingState: e.target.value })}
                 maxLength={100}
@@ -444,6 +444,7 @@ export default function ClientDetailPage() {
               />
               <input
                 placeholder="ZIP"
+                aria-label="ZIP"
                 value={editData.billingPostalCode}
                 onChange={(e) => setEditData({ ...editData, billingPostalCode: e.target.value })}
                 maxLength={20}

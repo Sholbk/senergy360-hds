@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { PROJECT_TYPES, STATUS_LABELS } from '@/lib/utils';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
 import Link from 'next/link';
@@ -19,18 +20,6 @@ interface ProjectRow {
   description: string | null;
   buildingPlanSummary: string | null;
 }
-
-const PROJECT_TYPES = [
-  { value: 'new_construction', label: 'New Construction' },
-  { value: 'renovation', label: 'Renovation' },
-  { value: 'addition', label: 'Addition' },
-  { value: 'remodel', label: 'Remodel' },
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'residential', label: 'Residential' },
-  { value: 'multi_family', label: 'Multi-Family' },
-  { value: 'custom_home', label: 'Custom Home' },
-  { value: 'other', label: 'Other' },
-];
 
 export default function ProjectsPage() {
   const [supabase] = useState(() => createClient());
@@ -215,12 +204,6 @@ export default function ProjectsPage() {
     });
   };
 
-  const statusLabels: Record<string, string> = {
-    draft: 'Draft',
-    in_progress: 'In Progress',
-    completed: 'Completed',
-  };
-
   const statusColors: Record<string, string> = {
     draft: 'border-l-gray-400',
     in_progress: 'border-l-green-500',
@@ -256,11 +239,11 @@ export default function ProjectsPage() {
           {(['draft', 'in_progress', 'completed'] as const).map((status) => (
             <div key={status}>
               <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                {statusLabels[status]}
+                {STATUS_LABELS[status]}
                 <span className="text-sm text-muted font-normal">({grouped[status].length})</span>
               </h2>
               {grouped[status].length === 0 ? (
-                <p className="text-sm text-muted italic pl-4">No {statusLabels[status].toLowerCase()} projects.</p>
+                <p className="text-sm text-muted italic pl-4">No {STATUS_LABELS[status].toLowerCase()} projects.</p>
               ) : (
                 <div className="space-y-2">
                   {grouped[status].map((project) => (
@@ -296,7 +279,7 @@ export default function ProjectsPage() {
                         className="ml-3 p-2 text-muted hover:text-red-500 transition-colors"
                         title="Delete project"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                           <polyline points="3,6 5,6 21,6" />
                           <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
                         </svg>
@@ -400,6 +383,7 @@ export default function ProjectsPage() {
           <div className="space-y-3">
             <input
               placeholder="Address Line 1"
+              aria-label="Address Line 1"
               value={formData.siteAddressLine1}
               onChange={(e) => setFormData({ ...formData, siteAddressLine1: e.target.value })}
               maxLength={200}
@@ -407,6 +391,7 @@ export default function ProjectsPage() {
             />
             <input
               placeholder="Address Line 2"
+              aria-label="Address Line 2"
               value={formData.siteAddressLine2}
               onChange={(e) => setFormData({ ...formData, siteAddressLine2: e.target.value })}
               maxLength={200}
@@ -415,6 +400,7 @@ export default function ProjectsPage() {
             <div className="grid grid-cols-3 gap-3">
               <input
                 placeholder="City"
+                aria-label="City"
                 value={formData.siteCity}
                 onChange={(e) => setFormData({ ...formData, siteCity: e.target.value })}
                 maxLength={100}
@@ -422,6 +408,7 @@ export default function ProjectsPage() {
               />
               <input
                 placeholder="State"
+                aria-label="State"
                 value={formData.siteState}
                 onChange={(e) => setFormData({ ...formData, siteState: e.target.value })}
                 maxLength={100}
@@ -429,6 +416,7 @@ export default function ProjectsPage() {
               />
               <input
                 placeholder="ZIP"
+                aria-label="ZIP"
                 value={formData.sitePostalCode}
                 onChange={(e) => setFormData({ ...formData, sitePostalCode: e.target.value })}
                 maxLength={20}

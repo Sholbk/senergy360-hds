@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { sanitizeAuthError } from '@/lib/utils';
 
 export default function LoginPage() {
@@ -89,9 +90,9 @@ export default function LoginPage() {
           </button>
 
           <div className="text-center">
-            <a href="/forgot-password" className="text-sm text-primary hover:text-primary-dark">
+            <Link href="/forgot-password" className="text-sm text-primary hover:text-primary-dark">
               Forgot password?
-            </a>
+            </Link>
           </div>
         </form>
       </div>

@@ -5,19 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
 import Modal from '@/components/ui/Modal';
-import { isValidUUID, VALID_STATUSES } from '@/lib/utils';
-
-const PROJECT_TYPES = [
-  { value: 'new_construction', label: 'New Construction' },
-  { value: 'renovation', label: 'Renovation' },
-  { value: 'addition', label: 'Addition' },
-  { value: 'remodel', label: 'Remodel' },
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'residential', label: 'Residential' },
-  { value: 'multi_family', label: 'Multi-Family' },
-  { value: 'custom_home', label: 'Custom Home' },
-  { value: 'other', label: 'Other' },
-];
+import { isValidUUID, VALID_STATUSES, PROJECT_TYPES, STATUS_LABELS, STATUS_STYLES } from '@/lib/utils';
 
 interface ProjectDetail {
   id: string;
@@ -133,6 +121,20 @@ export default function ProjectDetailPage() {
   const [clientMaterialId, setClientMaterialId] = useState('');
   const [clientMaterialNotes, setClientMaterialNotes] = useState('');
   const [clientMaterialSaving, setClientMaterialSaving] = useState(false);
+
+  // Confirm modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+
+  // Action error state
+  const [actionError, setActionError] = useState('');
+
+  const requestConfirm = (message: string, action: () => void) => {
+    setConfirmMessage(message);
+    setConfirmAction(() => action);
+    setShowConfirmModal(true);
+  };
 
   const loadProject = useCallback(async () => {
     // Load project with client info
@@ -369,10 +371,13 @@ export default function ProjectDetailPage() {
   const assignProfessional = async () => {
     if (!selectedProfessionalId) return;
     setAssignProSaving(true);
+    setActionError('');
     const { error } = await supabase
       .from('project_professionals')
       .insert({ project_id: projectId, professional_id: selectedProfessionalId });
-    if (!error) {
+    if (error) {
+      setActionError('Failed to assign professional. Please try again.');
+    } else {
       setShowAssignProModal(false);
       await loadProject();
     }
@@ -380,12 +385,16 @@ export default function ProjectDetailPage() {
   };
 
   // --- Remove Professional ---
-  const removeProfessional = async (projectProfessionalId: string) => {
-    if (!confirm('Remove this professional and all their assigned materials from the project?')) return;
-    const { error } = await supabase.from('project_professionals').delete().eq('id', projectProfessionalId);
-    if (!error) {
-      await loadProject();
-    }
+  const removeProfessional = (projectProfessionalId: string) => {
+    requestConfirm('Remove this professional and all their assigned materials from the project?', async () => {
+      setActionError('');
+      const { error } = await supabase.from('project_professionals').delete().eq('id', projectProfessionalId);
+      if (error) {
+        setActionError('Failed to complete action. Please try again.');
+      } else {
+        await loadProject();
+      }
+    });
   };
 
   // --- Add Material to Professional ---
@@ -403,12 +412,15 @@ export default function ProjectDetailPage() {
   const addProMaterial = async () => {
     if (!selectedMaterialId || !proMaterialTarget) return;
     setProMaterialSaving(true);
+    setActionError('');
     const { error } = await supabase.from('project_professional_materials').insert({
       project_professional_id: proMaterialTarget.projectProfessionalId,
       material_id: selectedMaterialId,
       notes: materialNotes || null,
     });
-    if (!error) {
+    if (error) {
+      setActionError('Failed to complete action. Please try again.');
+    } else {
       setShowProMaterialModal(false);
       await loadProject();
     }
@@ -416,12 +428,16 @@ export default function ProjectDetailPage() {
   };
 
   // --- Remove Material from Professional ---
-  const removeProMaterial = async (materialRowId: string) => {
-    if (!confirm('Remove this material?')) return;
-    const { error } = await supabase.from('project_professional_materials').delete().eq('id', materialRowId);
-    if (!error) {
-      await loadProject();
-    }
+  const removeProMaterial = (materialRowId: string) => {
+    requestConfirm('Remove this material?', async () => {
+      setActionError('');
+      const { error } = await supabase.from('project_professional_materials').delete().eq('id', materialRowId);
+      if (error) {
+        setActionError('Failed to complete action. Please try again.');
+      } else {
+        await loadProject();
+      }
+    });
   };
 
   // --- Add Client-Directed Material ---
@@ -438,12 +454,15 @@ export default function ProjectDetailPage() {
   const addClientMaterial = async () => {
     if (!clientMaterialId) return;
     setClientMaterialSaving(true);
+    setActionError('');
     const { error } = await supabase.from('project_client_materials').insert({
       project_id: projectId,
       material_id: clientMaterialId,
       notes: clientMaterialNotes || null,
     });
-    if (!error) {
+    if (error) {
+      setActionError('Failed to complete action. Please try again.');
+    } else {
       setShowClientMaterialModal(false);
       await loadProject();
     }
@@ -451,29 +470,21 @@ export default function ProjectDetailPage() {
   };
 
   // --- Remove Client-Directed Material ---
-  const removeClientMaterial = async (materialRowId: string) => {
-    if (!confirm('Remove this material?')) return;
-    const { error } = await supabase.from('project_client_materials').delete().eq('id', materialRowId);
-    if (!error) {
-      await loadProject();
-    }
+  const removeClientMaterial = (materialRowId: string) => {
+    requestConfirm('Remove this material?', async () => {
+      setActionError('');
+      const { error } = await supabase.from('project_client_materials').delete().eq('id', materialRowId);
+      if (error) {
+        setActionError('Failed to complete action. Please try again.');
+      } else {
+        await loadProject();
+      }
+    });
   };
 
   if (!isValidUUID(projectId)) return <p className="text-muted text-sm">Project not found.</p>;
   if (loading) return <p className="text-muted text-sm">Loading...</p>;
   if (!project) return <p className="text-muted text-sm">Project not found.</p>;
-
-  const statusStyles: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-700',
-    in_progress: 'bg-green-100 text-green-700',
-    completed: 'bg-blue-100 text-blue-700',
-  };
-
-  const statusLabels: Record<string, string> = {
-    draft: 'Draft',
-    in_progress: 'In Progress',
-    completed: 'Completed',
-  };
 
   const inputClass = 'w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary';
 
@@ -493,9 +504,9 @@ export default function ProjectDetailPage() {
             setNewStatus(project.status);
             setShowStatusModal(true);
           }}
-          className={`text-xs px-3 py-1 rounded-full font-medium cursor-pointer ${statusStyles[project.status]}`}
+          className={`text-xs px-3 py-1 rounded-full font-medium cursor-pointer ${STATUS_STYLES[project.status]}`}
         >
-          {statusLabels[project.status]}
+          {STATUS_LABELS[project.status]}
         </button>
       </div>
 
@@ -548,6 +559,11 @@ export default function ProjectDetailPage() {
 
         {/* Right 2/3: Professionals & Materials */}
         <div className="w-2/3 space-y-6">
+          {actionError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+              {actionError}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">Assigned Materials</h2>
             <button
@@ -995,6 +1011,17 @@ export default function ProjectDetailPage() {
             >
               {clientMaterialSaving ? 'Adding...' : 'Add Material'}
             </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm Modal */}
+      <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)} title="Confirm">
+        <div className="space-y-4">
+          <p className="text-sm text-foreground">{confirmMessage}</p>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors">Cancel</button>
+            <button onClick={() => { confirmAction?.(); setShowConfirmModal(false); }} className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Confirm</button>
           </div>
         </div>
       </Modal>

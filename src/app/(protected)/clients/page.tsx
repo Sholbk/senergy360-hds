@@ -41,7 +41,7 @@ export default function ClientsPage() {
     billingPostalCode: '',
     billingCountry: 'US',
   });
-  const [phoneError, setPhoneError] = useState('');
+  const [formError, setFormError] = useState('');
 
   const loadClients = async () => {
     setLoading(true);
@@ -89,30 +89,30 @@ export default function ClientsPage() {
     if (!formData.primaryFirstName.trim() || !formData.primaryLastName.trim()) return;
 
     if (formData.primaryPhone && !PHONE_REGEX.test(formData.primaryPhone)) {
-      setPhoneError('Invalid phone number format');
+      setFormError('Invalid phone number format');
       return;
     }
 
     if (formData.primaryEmail && !isValidEmail(formData.primaryEmail)) {
-      setPhoneError('Invalid email format');
+      setFormError('Invalid email format');
       return;
     }
 
     if (formData.secondaryPhone && !PHONE_REGEX.test(formData.secondaryPhone)) {
-      setPhoneError('Invalid secondary phone number format');
+      setFormError('Invalid secondary phone number format');
       return;
     }
 
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      setPhoneError('Could not load your profile. Please log out and log back in.');
+      setFormError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
       return;
     }
     const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (profileError || !profile) {
-      setPhoneError('Could not load your profile. Please log out and log back in.');
+      setFormError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
       return;
     }
@@ -136,7 +136,7 @@ export default function ClientsPage() {
     });
 
     if (error) {
-      setPhoneError('Failed to add client. Please try again.');
+      setFormError('Failed to add client. Please try again.');
     } else {
       setShowAddModal(false);
       resetForm();
@@ -162,7 +162,7 @@ export default function ClientsPage() {
       billingPostalCode: '',
       billingCountry: 'US',
     });
-    setPhoneError('');
+    setFormError('');
   };
 
   return (
@@ -257,12 +257,12 @@ export default function ClientsPage() {
                 value={formData.primaryPhone}
                 onChange={(e) => {
                   setFormData({ ...formData, primaryPhone: e.target.value });
-                  setPhoneError('');
+                  setFormError('');
                 }}
                 maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              {phoneError && <p className="text-xs text-danger mt-1">{phoneError}</p>}
+              {formError && <p className="text-xs text-danger mt-1">{formError}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Email</label>
@@ -302,6 +302,7 @@ export default function ClientsPage() {
           <div className="space-y-3">
             <input
               placeholder="Address Line 1"
+              aria-label="Address Line 1"
               value={formData.billingAddressLine1}
               onChange={(e) => setFormData({ ...formData, billingAddressLine1: e.target.value })}
               maxLength={200}
@@ -309,6 +310,7 @@ export default function ClientsPage() {
             />
             <input
               placeholder="Address Line 2"
+              aria-label="Address Line 2"
               value={formData.billingAddressLine2}
               onChange={(e) => setFormData({ ...formData, billingAddressLine2: e.target.value })}
               maxLength={200}
@@ -317,6 +319,7 @@ export default function ClientsPage() {
             <div className="grid grid-cols-3 gap-3">
               <input
                 placeholder="City"
+                aria-label="City"
                 value={formData.billingCity}
                 onChange={(e) => setFormData({ ...formData, billingCity: e.target.value })}
                 maxLength={100}
@@ -324,6 +327,7 @@ export default function ClientsPage() {
               />
               <input
                 placeholder="State"
+                aria-label="State"
                 value={formData.billingState}
                 onChange={(e) => setFormData({ ...formData, billingState: e.target.value })}
                 maxLength={100}
@@ -331,6 +335,7 @@ export default function ClientsPage() {
               />
               <input
                 placeholder="ZIP"
+                aria-label="ZIP"
                 value={formData.billingPostalCode}
                 onChange={(e) => setFormData({ ...formData, billingPostalCode: e.target.value })}
                 maxLength={20}

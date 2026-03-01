@@ -1,5 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import { STATUS_LABELS, STATUS_STYLES } from '@/lib/utils';
+
+interface ProjectWithClient {
+  id: string;
+  name: string;
+  status: string;
+  client_id: string;
+  clients: { primary_first_name: string; primary_last_name: string } | null;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -98,7 +107,7 @@ export default async function DashboardPage() {
           </div>
           {recentProjects && recentProjects.length > 0 ? (
             <div className="space-y-2">
-              {recentProjects.map((project) => (
+              {(recentProjects as unknown as ProjectWithClient[]).map((project) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
@@ -107,9 +116,8 @@ export default async function DashboardPage() {
                   <div>
                     <p className="text-sm font-medium text-foreground">{project.name}</p>
                     <p className="text-xs text-muted">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {(project as any).clients
-                        ? `${(project as any).clients.primary_first_name} ${(project as any).clients.primary_last_name}`
+                      {project.clients
+                        ? `${project.clients.primary_first_name} ${project.clients.primary_last_name}`
                         : ''}
                     </p>
                   </div>
@@ -173,21 +181,9 @@ function StatsCard({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-700',
-    in_progress: 'bg-green-100 text-green-700',
-    completed: 'bg-blue-100 text-blue-700',
-  };
-
-  const labels: Record<string, string> = {
-    draft: 'Draft',
-    in_progress: 'In Progress',
-    completed: 'Completed',
-  };
-
   return (
-    <span className={`text-xs px-2 py-1 rounded-full font-medium ${styles[status] || 'bg-gray-100 text-gray-700'}`}>
-      {labels[status] || status}
+    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLES[status] || 'bg-gray-100 text-gray-700'}`}>
+      {STATUS_LABELS[status] || status}
     </span>
   );
 }

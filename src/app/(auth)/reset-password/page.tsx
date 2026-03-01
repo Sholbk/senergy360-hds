@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { sanitizeAuthError } from '@/lib/utils';
 
 export default function ResetPasswordPage() {
@@ -70,9 +71,9 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-md p-8 bg-card-bg rounded-lg shadow-lg border border-border text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Link Expired</h1>
           <p className="text-muted mb-4">This password reset link has expired or is invalid. Please request a new one.</p>
-          <a href="/forgot-password" className="text-primary hover:text-primary-dark">
+          <Link href="/forgot-password" className="text-primary hover:text-primary-dark">
             Request a new reset link
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -25,7 +25,7 @@ export default function AppSidebar() {
         <span className="text-sidebar-text text-sm font-semibold tracking-wide">SENERGY360</span>
       </div>
 
-      <nav className="flex-1 px-2 py-4 space-y-1">
+      <nav aria-label="Main navigation" className="flex-1 px-2 py-4 space-y-1">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');

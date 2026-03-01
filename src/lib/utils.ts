@@ -27,6 +27,32 @@ export function isValidUrl(url: string): boolean {
 // Valid project statuses
 export const VALID_STATUSES = ['draft', 'in_progress', 'completed'] as const;
 
+// Shared project types
+export const PROJECT_TYPES = [
+  { value: 'new_construction', label: 'New Construction' },
+  { value: 'renovation', label: 'Renovation' },
+  { value: 'addition', label: 'Addition' },
+  { value: 'remodel', label: 'Remodel' },
+  { value: 'commercial', label: 'Commercial' },
+  { value: 'residential', label: 'Residential' },
+  { value: 'multi_family', label: 'Multi-Family' },
+  { value: 'custom_home', label: 'Custom Home' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+// Shared status display maps
+export const STATUS_LABELS: Record<string, string> = {
+  draft: 'Draft',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+};
+
+export const STATUS_STYLES: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-700',
+  in_progress: 'bg-green-100 text-green-700',
+  completed: 'bg-blue-100 text-blue-700',
+};
+
 // Compute subcategory display numeral (e.g., "3.7")
 export function getSubCategoryNumeral(
   mainNumeral: number,

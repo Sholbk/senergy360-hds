@@ -11,9 +11,8 @@ interface AuthState {
   loading: boolean;
 }
 
-const supabase = createClient();
-
 export function useAuth(): AuthState {
+  const [supabase] = useState(() => createClient());
   const [state, setState] = useState<AuthState>({
     userId: null,
     tenantId: null,
@@ -43,7 +42,7 @@ export function useAuth(): AuthState {
       });
     }
     load();
-  }, []);
+  }, [supabase]);
 
   return state;
 }

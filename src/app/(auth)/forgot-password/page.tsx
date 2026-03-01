@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import { sanitizeAuthError } from '@/lib/utils';
 
 export default function ForgotPasswordPage() {
@@ -39,9 +40,9 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="text-center">
             <p className="text-success mb-4">Check your email for a password reset link.</p>
-            <a href="/login" className="text-primary hover:text-primary-dark">
+            <Link href="/login" className="text-primary hover:text-primary-dark">
               Back to login
-            </a>
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -77,9 +78,9 @@ export default function ForgotPasswordPage() {
             </button>
 
             <div className="text-center">
-              <a href="/login" className="text-sm text-primary hover:text-primary-dark">
+              <Link href="/login" className="text-sm text-primary hover:text-primary-dark">
                 Back to login
-              </a>
+              </Link>
             </div>
           </form>
         )}

@@ -28,7 +28,7 @@ export default function CategoriesPage() {
     async function load() {
       const { data } = await supabase
         .from('main_categories')
-        .select('*')
+        .select('id, tenant_id, numeral, name, description, created_at, updated_at')
         .order('numeral');
       if (data) {
         const mapped = data.map((d) => ({
@@ -53,7 +53,7 @@ export default function CategoriesPage() {
   const loadSubCategories = useCallback(async (mainCatId: string) => {
     const { data } = await supabase
       .from('sub_categories')
-      .select('*')
+      .select('id, tenant_id, main_category_id, parent_sub_category_id, sort_order, name, description, created_at, updated_at')
       .eq('main_category_id', mainCatId)
       .is('parent_sub_category_id', null)
       .order('sort_order');
@@ -89,7 +89,7 @@ export default function CategoriesPage() {
       // Load private notes for this subcategory
       const { data: notesData } = await supabase
         .from('private_notes')
-        .select('*')
+        .select('id, note, created_at, tenant_id')
         .eq('sub_category_id', selectedSubCat.id)
         .order('created_at', { ascending: false });
 
@@ -187,7 +187,7 @@ export default function CategoriesPage() {
     const { data: newNote } = await supabase
       .from('private_notes')
       .insert({ tenant_id: profile.tenant_id, note, sub_category_id: selectedSubCat.id })
-      .select('*')
+      .select('id, note, created_at, tenant_id')
       .single();
 
     if (newNote) {

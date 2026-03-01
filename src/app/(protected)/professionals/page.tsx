@@ -45,7 +45,7 @@ export default function ProfessionalsPage() {
     businessPostalCode: '',
     businessCountry: 'US',
   });
-  const [phoneError, setPhoneError] = useState('');
+  const [formError, setFormError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
   const [deleteProName, setDeleteProName] = useState('');
 
@@ -96,33 +96,33 @@ export default function ProfessionalsPage() {
 
   const handleSave = async () => {
     if (!formData.businessName.trim() || !formData.primarySpecialty.trim() || !formData.primaryFirstName.trim() || !formData.primaryLastName.trim()) {
-      setPhoneError('Business Name, Primary Specialty, First Name, and Last Name are required.');
+      setFormError('Business Name, Primary Specialty, First Name, and Last Name are required.');
       return;
     }
 
     if (formData.primaryPhone && !PHONE_REGEX.test(formData.primaryPhone)) {
-      setPhoneError('Invalid phone number format');
+      setFormError('Invalid phone number format');
       return;
     }
     if (formData.primaryEmail && !isValidEmail(formData.primaryEmail)) {
-      setPhoneError('Invalid email format');
+      setFormError('Invalid email format');
       return;
     }
     if (formData.secondaryPhone && !PHONE_REGEX.test(formData.secondaryPhone)) {
-      setPhoneError('Invalid secondary phone number format');
+      setFormError('Invalid secondary phone number format');
       return;
     }
 
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      setPhoneError('Could not load your profile. Please log out and log back in.');
+      setFormError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
       return;
     }
     const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (profileError || !profile) {
-      setPhoneError('Could not load your profile. Please log out and log back in.');
+      setFormError('Could not load your profile. Please log out and log back in.');
       setSaving(false);
       return;
     }
@@ -148,7 +148,7 @@ export default function ProfessionalsPage() {
     });
 
     if (error) {
-      setPhoneError('Failed to add professional. Please try again.');
+      setFormError('Failed to add professional. Please try again.');
     } else {
       setShowAddModal(false);
       resetForm();
@@ -176,7 +176,7 @@ export default function ProfessionalsPage() {
       businessPostalCode: '',
       businessCountry: 'US',
     });
-    setPhoneError('');
+    setFormError('');
   };
 
   const handleDelete = async (profId: string) => {
@@ -254,7 +254,7 @@ export default function ProfessionalsPage() {
                 className="ml-3 p-2 text-muted hover:text-red-500 transition-colors"
                 title="Delete professional"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <polyline points="3,6 5,6 21,6" />
                   <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
                 </svg>
@@ -265,11 +265,11 @@ export default function ProfessionalsPage() {
       )}
 
       {/* Add Professional Modal */}
-      <Modal isOpen={showAddModal} onClose={() => { setShowAddModal(false); setPhoneError(''); }} title="New Professional" maxWidth="max-w-2xl">
+      <Modal isOpen={showAddModal} onClose={() => { setShowAddModal(false); setFormError(''); }} title="New Professional" maxWidth="max-w-2xl">
         <div className="space-y-4">
-          {phoneError && (
+          {formError && (
             <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-              {phoneError}
+              {formError}
             </div>
           )}
           <h3 className="text-sm font-semibold text-foreground">Business Info</h3>
@@ -326,7 +326,7 @@ export default function ProfessionalsPage() {
                 value={formData.primaryPhone}
                 onChange={(e) => {
                   setFormData({ ...formData, primaryPhone: e.target.value });
-                  setPhoneError('');
+                  setFormError('');
                 }}
                 maxLength={20}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -389,6 +389,7 @@ export default function ProfessionalsPage() {
           <div className="space-y-3">
             <input
               placeholder="Address Line 1"
+              aria-label="Address Line 1"
               value={formData.businessAddressLine1}
               onChange={(e) => setFormData({ ...formData, businessAddressLine1: e.target.value })}
               maxLength={200}
@@ -396,6 +397,7 @@ export default function ProfessionalsPage() {
             />
             <input
               placeholder="Address Line 2"
+              aria-label="Address Line 2"
               value={formData.businessAddressLine2}
               onChange={(e) => setFormData({ ...formData, businessAddressLine2: e.target.value })}
               maxLength={200}
@@ -404,6 +406,7 @@ export default function ProfessionalsPage() {
             <div className="grid grid-cols-3 gap-3">
               <input
                 placeholder="City"
+                aria-label="City"
                 value={formData.businessCity}
                 onChange={(e) => setFormData({ ...formData, businessCity: e.target.value })}
                 maxLength={100}
@@ -411,6 +414,7 @@ export default function ProfessionalsPage() {
               />
               <input
                 placeholder="State"
+                aria-label="State"
                 value={formData.businessState}
                 onChange={(e) => setFormData({ ...formData, businessState: e.target.value })}
                 maxLength={100}
@@ -418,6 +422,7 @@ export default function ProfessionalsPage() {
               />
               <input
                 placeholder="ZIP"
+                aria-label="ZIP"
                 value={formData.businessPostalCode}
                 onChange={(e) => setFormData({ ...formData, businessPostalCode: e.target.value })}
                 maxLength={20}

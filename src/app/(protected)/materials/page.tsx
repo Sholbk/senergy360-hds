@@ -74,8 +74,8 @@ function MaterialsPageContent() {
   useEffect(() => {
     async function loadCategories() {
       const [mainRes, subRes] = await Promise.all([
-        supabase.from('main_categories').select('*').order('numeral'),
-        supabase.from('sub_categories').select('*').order('sort_order'),
+        supabase.from('main_categories').select('id, tenant_id, numeral, name, description, created_at, updated_at').order('numeral'),
+        supabase.from('sub_categories').select('id, name, sort_order, main_category_id, parent_sub_category_id').order('sort_order'),
       ]);
 
       if (mainRes.data) {
