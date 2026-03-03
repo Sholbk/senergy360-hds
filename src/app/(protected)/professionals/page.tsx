@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
 import { PHONE_REGEX, isValidEmail } from '@/lib/utils';
+import { createProfessionalAction } from './actions';
 import Link from 'next/link';
 
 interface ProfessionalRow {
@@ -114,41 +115,10 @@ export default function ProfessionalsPage() {
     }
 
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setFormError('Could not load your profile. Please log out and log back in.');
-      setSaving(false);
-      return;
-    }
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
-    if (profileError || !profile) {
-      setFormError('Could not load your profile. Please log out and log back in.');
-      setSaving(false);
-      return;
-    }
+    const result = await createProfessionalAction(formData);
 
-    const { error } = await supabase.from('professionals').insert({
-      tenant_id: profile.tenant_id,
-      business_name: formData.businessName.trim(),
-      primary_specialty: formData.primarySpecialty.trim(),
-      primary_first_name: formData.primaryFirstName.trim(),
-      primary_last_name: formData.primaryLastName.trim(),
-      primary_phone: formData.primaryPhone.trim() || null,
-      primary_email: formData.primaryEmail.trim() || null,
-      secondary_first_name: formData.secondaryFirstName.trim() || null,
-      secondary_last_name: formData.secondaryLastName.trim() || null,
-      secondary_phone: formData.secondaryPhone.trim() || null,
-      secondary_email: formData.secondaryEmail.trim() || null,
-      business_address_line1: formData.businessAddressLine1.trim() || null,
-      business_address_line2: formData.businessAddressLine2.trim() || null,
-      business_city: formData.businessCity.trim() || null,
-      business_state: formData.businessState.trim() || null,
-      business_postal_code: formData.businessPostalCode.trim() || null,
-      business_country: formData.businessCountry.trim() || 'US',
-    });
-
-    if (error) {
-      setFormError('Failed to add professional. Please try again.');
+    if (result.error) {
+      setFormError(result.error);
     } else {
       setShowAddModal(false);
       resetForm();

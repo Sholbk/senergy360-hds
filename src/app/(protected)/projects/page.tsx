@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PROJECT_TYPES, STATUS_LABELS } from '@/lib/utils';
+import { createProjectAction } from './actions';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
 import Link from 'next/link';
@@ -134,38 +135,10 @@ export default function ProjectsPage() {
       return;
     }
     setSaving(true);
+    const result = await createProjectAction(formData);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setFormError('Could not load your profile. Please log out and log back in.');
-      setSaving(false);
-      return;
-    }
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
-    if (profileError || !profile) {
-      setFormError('Could not load your profile. Please log out and log back in.');
-      setSaving(false);
-      return;
-    }
-
-    const { error } = await supabase.from('projects').insert({
-      tenant_id: profile.tenant_id,
-      name: formData.name.trim(),
-      client_id: formData.clientId,
-      project_type: formData.projectType,
-      project_type_other_description: formData.projectType === 'other' ? formData.otherDescription.trim() : null,
-      description: formData.description.trim() || null,
-      building_plan_summary: formData.buildingPlanSummary.trim() || null,
-      site_address_line1: formData.siteAddressLine1.trim(),
-      site_address_line2: formData.siteAddressLine2.trim() || null,
-      site_city: formData.siteCity.trim(),
-      site_state: formData.siteState.trim(),
-      site_postal_code: formData.sitePostalCode.trim(),
-      site_country: formData.siteCountry.trim() || 'US',
-    });
-
-    if (error) {
-      setFormError('Failed to create project. Please try again.');
+    if (result.error) {
+      setFormError(result.error);
     } else {
       setShowAddModal(false);
       resetForm();

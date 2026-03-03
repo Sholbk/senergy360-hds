@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
 import { PHONE_REGEX, isValidEmail } from '@/lib/utils';
+import { createClientAction } from './actions';
 import Link from 'next/link';
 
 interface ClientRow {
@@ -104,39 +105,10 @@ export default function ClientsPage() {
     }
 
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setFormError('Could not load your profile. Please log out and log back in.');
-      setSaving(false);
-      return;
-    }
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
-    if (profileError || !profile) {
-      setFormError('Could not load your profile. Please log out and log back in.');
-      setSaving(false);
-      return;
-    }
+    const result = await createClientAction(formData);
 
-    const { error } = await supabase.from('clients').insert({
-      tenant_id: profile.tenant_id,
-      primary_first_name: formData.primaryFirstName.trim(),
-      primary_last_name: formData.primaryLastName.trim(),
-      primary_phone: formData.primaryPhone.trim() || null,
-      primary_email: formData.primaryEmail.trim() || null,
-      secondary_first_name: formData.secondaryFirstName.trim() || null,
-      secondary_last_name: formData.secondaryLastName.trim() || null,
-      secondary_phone: formData.secondaryPhone.trim() || null,
-      secondary_email: formData.secondaryEmail.trim() || null,
-      billing_address_line1: formData.billingAddressLine1.trim() || null,
-      billing_address_line2: formData.billingAddressLine2.trim() || null,
-      billing_city: formData.billingCity.trim() || null,
-      billing_state: formData.billingState.trim() || null,
-      billing_postal_code: formData.billingPostalCode.trim() || null,
-      billing_country: formData.billingCountry.trim() || 'US',
-    });
-
-    if (error) {
-      setFormError('Failed to add client. Please try again.');
+    if (result.error) {
+      setFormError(result.error);
     } else {
       setShowAddModal(false);
       resetForm();
