@@ -32,6 +32,9 @@ export default function ProjectsPage() {
   const [deleteProjectName, setDeleteProjectName] = useState('');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const [showNewOwnerForm, setShowNewOwnerForm] = useState(false);
+  const [newOwner, setNewOwner] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [creatingOwner, setCreatingOwner] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     propertyOwnerId: '',
@@ -100,26 +103,54 @@ export default function ProjectsPage() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadProjects();
-
-    // Load property owners for dropdown
-    supabase
+  const loadPropertyOwners = async () => {
+    const { data } = await supabase
       .from('organizations')
       .select('id, business_name, primary_first_name, primary_last_name')
       .eq('org_type', 'property_owner')
       .is('deleted_at', null)
-      .order('primary_last_name')
-      .then(({ data }) => {
-        if (data) {
-          setPropertyOwners(
-            data.map((d) => ({
-              id: d.id,
-              name: d.business_name || `${d.primary_first_name} ${d.primary_last_name}`,
-            }))
-          );
-        }
-      });
+      .order('primary_last_name');
+    if (data) {
+      setPropertyOwners(
+        data.map((d) => ({
+          id: d.id,
+          name: d.business_name || `${d.primary_first_name} ${d.primary_last_name}`,
+        }))
+      );
+    }
+  };
+
+  const handleCreateOwner = async () => {
+    if (!newOwner.firstName.trim() || !newOwner.lastName.trim()) return;
+    setCreatingOwner(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user?.id).single();
+
+    const { data: org, error } = await supabase
+      .from('organizations')
+      .insert({
+        tenant_id: profile?.tenant_id,
+        org_type: 'property_owner',
+        primary_first_name: newOwner.firstName.trim(),
+        primary_last_name: newOwner.lastName.trim(),
+        primary_email: newOwner.email.trim() || null,
+        primary_phone: newOwner.phone.trim() || null,
+      })
+      .select('id')
+      .single();
+
+    if (!error && org) {
+      await loadPropertyOwners();
+      setFormData({ ...formData, propertyOwnerId: org.id });
+      setShowNewOwnerForm(false);
+      setNewOwner({ firstName: '', lastName: '', email: '', phone: '' });
+    }
+    setCreatingOwner(false);
+  };
+
+  useEffect(() => {
+    loadProjects();
+    loadPropertyOwners();
   }, [supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredProjects = search.trim()
@@ -179,6 +210,8 @@ export default function ProjectsPage() {
   };
 
   const resetForm = () => {
+    setShowNewOwnerForm(false);
+    setNewOwner({ firstName: '', lastName: '', email: '', phone: '' });
     setFormData({
       name: '',
       propertyOwnerId: '',
@@ -309,16 +342,77 @@ export default function ProjectsPage() {
               <label className="block text-sm font-medium mb-1">
                 Property Owner <span className="text-danger">*</span>
               </label>
-              <select
-                value={formData.propertyOwnerId}
-                onChange={(e) => setFormData({ ...formData, propertyOwnerId: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Select property owner...</option>
-                {propertyOwners.map((o) => (
-                  <option key={o.id} value={o.id}>{o.name}</option>
-                ))}
-              </select>
+              {!showNewOwnerForm ? (
+                <>
+                  <select
+                    value={formData.propertyOwnerId}
+                    onChange={(e) => {
+                      if (e.target.value === '__new__') {
+                        setShowNewOwnerForm(true);
+                      } else {
+                        setFormData({ ...formData, propertyOwnerId: e.target.value });
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Select property owner...</option>
+                    {propertyOwners.map((o) => (
+                      <option key={o.id} value={o.id}>{o.name}</option>
+                    ))}
+                    <option value="__new__">+ Add New Property Owner</option>
+                  </select>
+                </>
+              ) : (
+                <div className="border border-border rounded-md p-3 space-y-2 bg-primary-bg">
+                  <p className="text-xs font-semibold text-foreground">New Property Owner</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      placeholder="First Name *"
+                      value={newOwner.firstName}
+                      onChange={(e) => setNewOwner({ ...newOwner, firstName: e.target.value })}
+                      className="px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <input
+                      placeholder="Last Name *"
+                      value={newOwner.lastName}
+                      onChange={(e) => setNewOwner({ ...newOwner, lastName: e.target.value })}
+                      className="px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      placeholder="Email"
+                      value={newOwner.email}
+                      onChange={(e) => setNewOwner({ ...newOwner, email: e.target.value })}
+                      className="px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <input
+                      placeholder="Phone"
+                      value={newOwner.phone}
+                      onChange={(e) => setNewOwner({ ...newOwner, phone: e.target.value })}
+                      className="px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCreateOwner}
+                      disabled={creatingOwner || !newOwner.firstName.trim() || !newOwner.lastName.trim()}
+                      className="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary-dark transition-colors disabled:opacity-50"
+                    >
+                      {creatingOwner ? 'Creating...' : 'Create'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowNewOwnerForm(false);
+                        setNewOwner({ firstName: '', lastName: '', email: '', phone: '' });
+                      }}
+                      className="px-3 py-1 text-xs border border-border rounded hover:bg-background transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Project Type</label>
