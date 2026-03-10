@@ -1,10 +1,40 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = [
+  '/',
+  '/about',
+  '/services',
+  '/faswall',
+  '/core-framework',
+  '/why-healthy-homes',
+  '/building-process',
+  '/building-envelope',
+  '/contact',
+];
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+
+  const pathname = request.nextUrl.pathname;
+
+  // Check route types
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isAuthRoute =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/forgot-password') ||
+    pathname.startsWith('/reset-password');
+  const isApiRoute = pathname.startsWith('/api');
+  const isApiAuthRoute = pathname.startsWith('/api/auth');
+  const isPublicApiRoute = pathname.startsWith('/api/leads');
+
+  // Allow public routes, public API routes, and static assets through without auth check
+  if (isPublicRoute || isPublicApiRoute) {
+    return supabaseResponse;
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -22,7 +52,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -41,23 +71,17 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Redirect unauthenticated users to login (except auth routes and API)
-  const isAuthRoute =
-    request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/forgot-password') ||
-    request.nextUrl.pathname.startsWith('/reset-password');
-  const isApiAuthRoute = request.nextUrl.pathname.startsWith('/api/auth');
-
   if (!user && !isAuthRoute && !isApiAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    return NextResponse.redirect(redirectUrl);
   }
 
   // Redirect authenticated users away from auth pages
   if (user && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/dashboard';
+    return NextResponse.redirect(redirectUrl);
   }
 
   return supabaseResponse;

@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FAFAF8;
-  --foreground: #2D2D2D;
-  --primary: #C5A55A;
-  --primary-dark: #A8893E;
-  --primary-light: #E8D9A8;
-  --primary-bg: #F5F0E1;
+  --background: #fdfcf8;
+  --foreground: #1A202C;
+  --primary: #a2774e;
+  --primary-dark: #8b6340;
+  --primary-light: #c9a87c;
+  --primary-bg: #f5f0e8;
+  --accent: #8dc54d;
+  --accent-dark: #79b03e;
+  --highlight-orange: #f7630c;
+  --highlight-gold: #f5a524;
   --border: #E5E2DA;
   --muted: #8A8A8A;
   --card-bg: #FFFFFF;
-  --sidebar-bg: #2D2D2D;
+  --sidebar-bg: #1A202C;
   --sidebar-text: #E5E2DA;
-  --sidebar-active: #C5A55A;
+  --sidebar-active: #a2774e;
   --success: #4CAF50;
   --warning: #FF9800;
   --danger: #E53935;
@@ -32,18 +36,27 @@
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--sidebar-text);
   --color-sidebar-active: var(--sidebar-active);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-highlight-orange: var(--highlight-orange);
+  --color-highlight-gold: var(--highlight-gold);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-info: var(--info);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-poppins);
+  --font-heading: var(--font-anton);
+  --font-mono: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-anton), Arial, Helvetica, sans-serif;
 }
 
 /* Sticky table header */

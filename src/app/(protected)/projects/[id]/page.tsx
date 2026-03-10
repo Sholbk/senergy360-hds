@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
 import Modal from '@/components/ui/Modal';
+import ProjectTabs from '@/components/projects/ProjectTabs';
 import { isValidUUID, VALID_STATUSES, PROJECT_TYPES, STATUS_LABELS, STATUS_STYLES } from '@/lib/utils';
 
 interface ProjectDetail {
@@ -497,7 +498,7 @@ export default function ProjectDetailPage() {
         &larr; Back to Projects
       </button>
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
         <button
           onClick={() => {
@@ -509,6 +510,8 @@ export default function ProjectDetailPage() {
           {STATUS_LABELS[project.status]}
         </button>
       </div>
+
+      <ProjectTabs projectId={projectId} />
 
       <div className="flex gap-6">
         {/* Left 1/3: Project Info Card */}

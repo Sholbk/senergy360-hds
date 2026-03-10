@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Anton, Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const anton = Anton({
+  variable: "--font-anton",
   subsets: ["latin"],
+  weight: "400",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "SENERGY360 HDS",
-  description: "Healthy Design Specifications - SENERGY360 Core Framework",
+  title: "SENERGY360 — Healthy Home Design & Construction",
+  description: "Full-service healthy home design, architecture, and construction firm. Integrating building science, engineering, and advanced wall systems to create homes that support human health.",
 };
 
 export default function RootLayout({
@@ -25,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${poppins.variable} ${anton.variable} ${inter.variable} antialiased`}
       >
         {children}
       </body>

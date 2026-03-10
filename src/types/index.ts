@@ -217,3 +217,198 @@ export interface Tenant {
   primaryColor?: string;
   createdAt: string;
 }
+
+// ============================================================
+// NEW TYPES — Document Portal, Feed, Invoicing, Checklist, Owner's Manual
+// ============================================================
+
+// -- Document Enums --
+
+export type DocumentType =
+  | 'proposal_contract'
+  | 'core_principles'
+  | 'core_systems_field_guide'
+  | 'contract_recommendations'
+  | 'building_science'
+  | 'environmental_testing'
+  | 'owners_manual_intro'
+  | 'hds_checklist'
+  | 'hds_trade_section'
+  | 'custom';
+
+export type DocumentVisibility =
+  | 'admin_only'
+  | 'client'
+  | 'professional'
+  | 'all_participants';
+
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+export type InvoiceLineType = 'hds' | 'inspection' | 'hourly' | 'custom';
+
+// -- Documents --
+
+export interface Document {
+  id: string;
+  tenantId: string;
+  projectId?: string;
+  clientId?: string;
+  documentType: DocumentType;
+  title: string;
+  description?: string;
+  storagePath?: string;
+  fileName?: string;
+  fileSizeBytes?: number;
+  mimeType?: string;
+  contentJson?: Record<string, unknown>;
+  visibility: DocumentVisibility;
+  sharedAt?: string;
+  sharedBy?: string;
+  sharedToEmails?: string[];
+  signatureRequired: boolean;
+  signedAt?: string;
+  signedByName?: string;
+  signatureData?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  access?: DocumentAccess[];
+}
+
+export interface DocumentAccess {
+  id: string;
+  documentId: string;
+  userId?: string;
+  professionalId?: string;
+  clientId?: string;
+  grantedAt: string;
+  grantedBy?: string;
+}
+
+// -- Feed --
+
+export type FeedEventType = 'document_shared' | 'hds_sent' | 'invoice_sent' | 'manual_post';
+
+export interface FeedPost {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  authorId: string;
+  content: string;
+  visibleTo: string[];
+  documentId?: string;
+  imagePaths: string[];
+  eventType?: FeedEventType;
+  eventMetadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  author?: Profile;
+  comments?: FeedComment[];
+  document?: Document;
+}
+
+export interface FeedComment {
+  id: string;
+  feedPostId: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  author?: Profile;
+}
+
+// -- Invoices --
+
+export interface Invoice {
+  id: string;
+  tenantId: string;
+  clientId: string;
+  projectId?: string;
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+  dueDate?: string;
+  paidAt?: string;
+  stripeInvoiceId?: string;
+  stripePaymentIntentId?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  lineItems?: InvoiceLineItem[];
+  client?: Client;
+  project?: Project;
+}
+
+export interface InvoiceLineItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitPriceCents: number;
+  totalCents: number;
+  lineType: InvoiceLineType;
+  sortOrder: number;
+}
+
+// -- Owner's Manual --
+
+export interface OwnersManualEntry {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  category: string;
+  materialId?: string;
+  professionalId?: string;
+  warrantyInfo?: string;
+  warrantyExpiry?: string;
+  contactInfo?: string;
+  notes?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  material?: Material;
+  professional?: Professional;
+}
+
+// -- Checklists --
+
+export interface ProjectChecklist {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  title: string;
+  createdAt: string;
+  items?: ChecklistItem[];
+}
+
+export interface ChecklistItem {
+  id: string;
+  checklistId: string;
+  mainCategoryId?: string;
+  subCategoryId?: string;
+  label: string;
+  isChecked: boolean;
+  checkedBy?: string;
+  checkedAt?: string;
+  notes?: string;
+  sortOrder: number;
+  mainCategory?: MainCategory;
+  subCategory?: SubCategory;
+}
+
+// -- Leads (marketing site) --
+
+export interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message?: string;
+  sourcePage?: string;
+  createdAt: string;
+}
