@@ -10,7 +10,6 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
-  { href: '/faswall', label: 'FASWALL' },
   { href: '/core-framework', label: 'CORE Framework' },
   { href: '/why-healthy-homes', label: 'Why Healthy Homes' },
   { href: '/contact', label: 'Contact' },
