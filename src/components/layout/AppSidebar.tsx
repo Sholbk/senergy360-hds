@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -34,9 +35,7 @@ export default function AppSidebar() {
   return (
     <aside className="w-[180px] min-w-[180px] bg-sidebar-bg min-h-screen flex flex-col">
       <div className="p-4 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center">
-          <span className="text-primary-dark text-xs font-bold">S</span>
-        </div>
+        <Image src="/logo.png" alt="SENERGY360" width={32} height={32} className="w-8 h-8" />
         <span className="text-sidebar-text text-sm font-semibold tracking-wide">SENERGY360</span>
       </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -25,9 +26,7 @@ export default function PublicNav() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-white text-sm font-bold">S</span>
-            </div>
+            <Image src="/logo.png" alt="SENERGY360" width={40} height={40} className="w-10 h-10" />
             <span className="text-foreground font-semibold text-lg tracking-wide">SENERGY360</span>
           </Link>
 
