@@ -49,7 +49,7 @@ export default function PublicNav() {
               href="/login"
               className="ml-4 px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
             >
-              Client Login
+              Login
             </Link>
           </nav>
 
@@ -92,7 +92,7 @@ export default function PublicNav() {
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm text-primary font-medium"
             >
-              Client Login
+              Login
             </Link>
           </nav>
         )}
