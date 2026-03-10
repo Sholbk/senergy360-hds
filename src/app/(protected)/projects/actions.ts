@@ -51,16 +51,20 @@ export async function createProjectAction(input: CreateProjectInput) {
   }).select('id').single();
 
   if (error || !newProject) {
-    return { error: 'Failed to create project. Please try again.' };
+    console.error('Project creation error:', error);
+    return { error: `Failed to create project: ${error?.message || 'Unknown error'}` };
   }
 
   // Add property owner as participant
   if (input.propertyOwnerId) {
-    await supabase.from('project_participants').insert({
+    const { error: participantError } = await supabase.from('project_participants').insert({
       project_id: newProject.id,
       organization_id: input.propertyOwnerId,
       project_role: 'property_owner',
     });
+    if (participantError) {
+      console.error('Participant insert error:', participantError);
+    }
   }
 
   return { success: true };
