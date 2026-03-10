@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import LeadCaptureForm from '@/components/public/LeadCaptureForm';
 
 const CORE_SYSTEMS = [
@@ -29,10 +30,13 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative text-white py-24 lg:py-32 min-h-[600px] flex items-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/hero.jpg')" }}
+      <section className="relative text-white py-24 lg:py-32 min-h-[600px] flex items-center overflow-hidden">
+        <Image
+          src="/hero.jpg"
+          alt="SENERGY360 Healthy Home"
+          fill
+          priority
+          className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
