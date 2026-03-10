@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
 import Modal from '@/components/ui/Modal';
 import ProjectTabs from '@/components/projects/ProjectTabs';
@@ -21,28 +22,18 @@ interface ProjectDetail {
   siteCity: string;
   siteState: string;
   sitePostalCode: string;
-  clientFirstName: string;
-  clientLastName: string;
-  clientEmail: string | null;
-  clientPhone: string | null;
-  clientId: string;
 }
 
-interface ProfessionalWithMaterials {
-  projectProfessionalId: string;
-  professionalId: string;
-  businessName: string;
-  primarySpecialty: string;
-  contactName: string;
-  materials: { id: string; name: string; primaryUse: string | null; notes: string | null }[];
-}
-
-interface ClientMaterial {
-  id: string;
-  materialId: string;
+interface OwnerInfo {
+  organizationId: string;
   name: string;
-  primaryUse: string | null;
-  notes: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+interface TeamSummary {
+  totalParticipants: number;
+  roles: { role: string; count: number }[];
 }
 
 interface NoteRow {
@@ -52,24 +43,17 @@ interface NoteRow {
   tenantId: string;
 }
 
-interface ProfessionalOption {
-  id: string;
-  businessName: string;
-  primarySpecialty: string;
-  contactName: string;
-}
-
-interface MaterialOption {
-  id: string;
-  name: string;
-  primaryUse: string | null;
-}
-
-interface ClientOption {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
+const ROLE_LABELS: Record<string, string> = {
+  property_owner: 'Property Owner',
+  architect: 'Architect',
+  general_contractor: 'General Contractor',
+  trades: 'Trades',
+  engineer: 'Engineer',
+  designer: 'Designer',
+  consultant: 'Consultant',
+  inspector: 'Inspector',
+  other: 'Other',
+};
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -78,8 +62,8 @@ export default function ProjectDetailPage() {
   const projectId = typeof params.id === 'string' ? params.id : params.id?.[0] ?? '';
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
-  const [professionals, setProfessionals] = useState<ProfessionalWithMaterials[]>([]);
-  const [clientMaterials, setClientMaterials] = useState<ClientMaterial[]>([]);
+  const [owner, setOwner] = useState<OwnerInfo | null>(null);
+  const [teamSummary, setTeamSummary] = useState<TeamSummary>({ totalParticipants: 0, roles: [] });
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -96,58 +80,20 @@ export default function ProjectDetailPage() {
     siteCity: '',
     siteState: '',
     sitePostalCode: '',
-    clientId: '',
     projectType: '',
     projectTypeOtherDescription: '',
   });
-  const [allClients, setAllClients] = useState<ClientOption[]>([]);
   const [editSaving, setEditSaving] = useState(false);
 
-  // Assign Professional modal state
-  const [showAssignProModal, setShowAssignProModal] = useState(false);
-  const [allProfessionals, setAllProfessionals] = useState<ProfessionalOption[]>([]);
-  const [selectedProfessionalId, setSelectedProfessionalId] = useState('');
-  const [assignProSaving, setAssignProSaving] = useState(false);
-
-  // Assign Material to Professional modal state
-  const [showProMaterialModal, setShowProMaterialModal] = useState(false);
-  const [proMaterialTarget, setProMaterialTarget] = useState<{ projectProfessionalId: string; businessName: string } | null>(null);
-  const [allMaterials, setAllMaterials] = useState<MaterialOption[]>([]);
-  const [selectedMaterialId, setSelectedMaterialId] = useState('');
-  const [materialNotes, setMaterialNotes] = useState('');
-  const [proMaterialSaving, setProMaterialSaving] = useState(false);
-
-  // Client Material modal state
-  const [showClientMaterialModal, setShowClientMaterialModal] = useState(false);
-  const [clientMaterialId, setClientMaterialId] = useState('');
-  const [clientMaterialNotes, setClientMaterialNotes] = useState('');
-  const [clientMaterialSaving, setClientMaterialSaving] = useState(false);
-
-  // Confirm modal state
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
-  const [confirmMessage, setConfirmMessage] = useState('');
-
-  // Action error state
-  const [actionError, setActionError] = useState('');
-
-  const requestConfirm = (message: string, action: () => void) => {
-    setConfirmMessage(message);
-    setConfirmAction(() => action);
-    setShowConfirmModal(true);
-  };
-
   const loadProject = useCallback(async () => {
-    // Load project with client info
+    // Load project
     const { data } = await supabase
       .from('projects')
-      .select('*, clients(primary_first_name, primary_last_name, primary_email, primary_phone)')
+      .select('*')
       .eq('id', projectId)
       .single();
 
     if (data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = data.clients as any;
       setProject({
         id: data.id,
         name: data.name,
@@ -161,75 +107,49 @@ export default function ProjectDetailPage() {
         siteCity: data.site_city,
         siteState: data.site_state,
         sitePostalCode: data.site_postal_code,
-        clientFirstName: client?.primary_first_name || '',
-        clientLastName: client?.primary_last_name || '',
-        clientEmail: client?.primary_email || null,
-        clientPhone: client?.primary_phone || null,
-        clientId: data.client_id,
       });
     }
 
-    // Load professionals with their materials
-    const { data: ppData } = await supabase
-      .from('project_professionals')
-      .select('id, professional_id, professionals(business_name, primary_specialty, primary_first_name, primary_last_name)')
-      .eq('project_id', projectId);
+    // Load property owner from project_participants
+    const { data: ownerParticipant } = await supabase
+      .from('project_participants')
+      .select('organization_id, organizations(business_name, primary_first_name, primary_last_name, primary_email, primary_phone)')
+      .eq('project_id', projectId)
+      .eq('project_role', 'property_owner')
+      .single();
 
-    if (ppData && ppData.length > 0) {
-      const ppIds = ppData.map((pp) => pp.id);
+    if (ownerParticipant) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: allMatData } = await supabase
-        .from('project_professional_materials')
-        .select('id, material_id, notes, project_professional_id, materials(name, primary_use)')
-        .in('project_professional_id', ppIds);
-
-      const matsByPpId = new Map<string, typeof allMatData>();
-      for (const m of allMatData || []) {
-        const existing = matsByPpId.get(m.project_professional_id) || [];
-        existing.push(m);
-        matsByPpId.set(m.project_professional_id, existing);
-      }
-
-      const prosWithMats: ProfessionalWithMaterials[] = ppData.map((pp) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const prof = pp.professionals as any;
-        const matData = matsByPpId.get(pp.id) || [];
-        return {
-          projectProfessionalId: pp.id,
-          professionalId: pp.professional_id,
-          businessName: prof?.business_name || '',
-          primarySpecialty: prof?.primary_specialty || '',
-          contactName: `${prof?.primary_first_name || ''} ${prof?.primary_last_name || ''}`.trim(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          materials: matData.map((m: any) => ({
-            id: m.id,
-            name: m.materials?.name || '',
-            primaryUse: m.materials?.primary_use || null,
-            notes: m.notes,
-          })),
-        };
+      const org = ownerParticipant.organizations as any;
+      const name = org?.business_name
+        || `${org?.primary_first_name || ''} ${org?.primary_last_name || ''}`.trim()
+        || 'Unknown';
+      setOwner({
+        organizationId: ownerParticipant.organization_id,
+        name,
+        email: org?.primary_email || null,
+        phone: org?.primary_phone || null,
       });
-      setProfessionals(prosWithMats);
     } else {
-      setProfessionals([]);
+      setOwner(null);
     }
 
-    // Load client-directed materials
-    const { data: clientMatData } = await supabase
-      .from('project_client_materials')
-      .select('id, material_id, notes, materials(name, primary_use)')
+    // Load team summary
+    const { data: participants } = await supabase
+      .from('project_participants')
+      .select('project_role')
       .eq('project_id', projectId);
 
-    if (clientMatData) {
-      setClientMaterials(
-        clientMatData.map((m) => ({
-          id: m.id,
-          materialId: m.material_id,
-          name: ((m.materials as any)?.name) || '',
-          primaryUse: ((m.materials as any)?.primary_use) || null,
-          notes: m.notes,
-        }))
-      );
+    if (participants && participants.length > 0) {
+      const roleCounts = new Map<string, number>();
+      for (const p of participants) {
+        const role = p.project_role || 'other';
+        roleCounts.set(role, (roleCounts.get(role) || 0) + 1);
+      }
+      const roles = Array.from(roleCounts.entries()).map(([role, count]) => ({ role, count }));
+      setTeamSummary({ totalParticipants: participants.length, roles });
+    } else {
+      setTeamSummary({ totalParticipants: 0, roles: [] });
     }
 
     // Load notes
@@ -292,7 +212,7 @@ export default function ProjectDetailPage() {
   };
 
   // --- Edit Project ---
-  const openEditModal = async () => {
+  const openEditModal = () => {
     if (!project) return;
     setEditForm({
       name: project.name,
@@ -303,19 +223,9 @@ export default function ProjectDetailPage() {
       siteCity: project.siteCity,
       siteState: project.siteState,
       sitePostalCode: project.sitePostalCode,
-      clientId: project.clientId,
       projectType: project.projectType,
       projectTypeOtherDescription: project.projectTypeOtherDescription || '',
     });
-
-    const { data: clients } = await supabase
-      .from('clients')
-      .select('id, primary_first_name, primary_last_name')
-      .order('primary_last_name');
-    if (clients) {
-      setAllClients(clients.map((c) => ({ id: c.id, firstName: c.primary_first_name, lastName: c.primary_last_name })));
-    }
-
     setShowEditModal(true);
   };
 
@@ -333,7 +243,6 @@ export default function ProjectDetailPage() {
         site_city: editForm.siteCity,
         site_state: editForm.siteState,
         site_postal_code: editForm.sitePostalCode,
-        client_id: editForm.clientId,
         project_type: editForm.projectType,
         project_type_other_description: editForm.projectType === 'other' ? editForm.projectTypeOtherDescription || null : null,
       })
@@ -346,142 +255,10 @@ export default function ProjectDetailPage() {
     setEditSaving(false);
   };
 
-  // --- Assign Professional ---
-  const openAssignProModal = async () => {
-    const { data } = await supabase
-      .from('professionals')
-      .select('id, business_name, primary_specialty, primary_first_name, primary_last_name')
-      .order('business_name');
-    if (data) {
-      const assignedIds = new Set(professionals.map((p) => p.professionalId));
-      setAllProfessionals(
-        data
-          .filter((p) => !assignedIds.has(p.id))
-          .map((p) => ({
-            id: p.id,
-            businessName: p.business_name,
-            primarySpecialty: p.primary_specialty,
-            contactName: `${p.primary_first_name || ''} ${p.primary_last_name || ''}`.trim(),
-          }))
-      );
-    }
-    setSelectedProfessionalId('');
-    setShowAssignProModal(true);
-  };
-
-  const assignProfessional = async () => {
-    if (!selectedProfessionalId) return;
-    setAssignProSaving(true);
-    setActionError('');
-    const { error } = await supabase
-      .from('project_professionals')
-      .insert({ project_id: projectId, professional_id: selectedProfessionalId });
-    if (error) {
-      setActionError('Failed to assign professional. Please try again.');
-    } else {
-      setShowAssignProModal(false);
-      await loadProject();
-    }
-    setAssignProSaving(false);
-  };
-
-  // --- Remove Professional ---
-  const removeProfessional = (projectProfessionalId: string) => {
-    requestConfirm('Remove this professional and all their assigned materials from the project?', async () => {
-      setActionError('');
-      const { error } = await supabase.from('project_professionals').delete().eq('id', projectProfessionalId);
-      if (error) {
-        setActionError('Failed to complete action. Please try again.');
-      } else {
-        await loadProject();
-      }
-    });
-  };
-
-  // --- Add Material to Professional ---
-  const openProMaterialModal = async (projectProfessionalId: string, businessName: string) => {
-    setProMaterialTarget({ projectProfessionalId, businessName });
-    const { data } = await supabase.from('materials').select('id, name, primary_use').order('name');
-    if (data) {
-      setAllMaterials(data.map((m) => ({ id: m.id, name: m.name, primaryUse: m.primary_use })));
-    }
-    setSelectedMaterialId('');
-    setMaterialNotes('');
-    setShowProMaterialModal(true);
-  };
-
-  const addProMaterial = async () => {
-    if (!selectedMaterialId || !proMaterialTarget) return;
-    setProMaterialSaving(true);
-    setActionError('');
-    const { error } = await supabase.from('project_professional_materials').insert({
-      project_professional_id: proMaterialTarget.projectProfessionalId,
-      material_id: selectedMaterialId,
-      notes: materialNotes || null,
-    });
-    if (error) {
-      setActionError('Failed to complete action. Please try again.');
-    } else {
-      setShowProMaterialModal(false);
-      await loadProject();
-    }
-    setProMaterialSaving(false);
-  };
-
-  // --- Remove Material from Professional ---
-  const removeProMaterial = (materialRowId: string) => {
-    requestConfirm('Remove this material?', async () => {
-      setActionError('');
-      const { error } = await supabase.from('project_professional_materials').delete().eq('id', materialRowId);
-      if (error) {
-        setActionError('Failed to complete action. Please try again.');
-      } else {
-        await loadProject();
-      }
-    });
-  };
-
-  // --- Add Client-Directed Material ---
-  const openClientMaterialModal = async () => {
-    const { data } = await supabase.from('materials').select('id, name, primary_use').order('name');
-    if (data) {
-      setAllMaterials(data.map((m) => ({ id: m.id, name: m.name, primaryUse: m.primary_use })));
-    }
-    setClientMaterialId('');
-    setClientMaterialNotes('');
-    setShowClientMaterialModal(true);
-  };
-
-  const addClientMaterial = async () => {
-    if (!clientMaterialId) return;
-    setClientMaterialSaving(true);
-    setActionError('');
-    const { error } = await supabase.from('project_client_materials').insert({
-      project_id: projectId,
-      material_id: clientMaterialId,
-      notes: clientMaterialNotes || null,
-    });
-    if (error) {
-      setActionError('Failed to complete action. Please try again.');
-    } else {
-      setShowClientMaterialModal(false);
-      await loadProject();
-    }
-    setClientMaterialSaving(false);
-  };
-
-  // --- Remove Client-Directed Material ---
-  const removeClientMaterial = (materialRowId: string) => {
-    requestConfirm('Remove this material?', async () => {
-      setActionError('');
-      const { error } = await supabase.from('project_client_materials').delete().eq('id', materialRowId);
-      if (error) {
-        setActionError('Failed to complete action. Please try again.');
-      } else {
-        await loadProject();
-      }
-    });
-  };
+  const projectTypeLabel = PROJECT_TYPES.find((t) => t.value === project?.projectType)?.label
+    || project?.projectTypeOtherDescription
+    || project?.projectType
+    || '-';
 
   if (!isValidUUID(projectId)) return <p className="text-muted text-sm">Project not found.</p>;
   if (loading) return <p className="text-muted text-sm">Loading...</p>;
@@ -514,11 +291,12 @@ export default function ProjectDetailPage() {
       <ProjectTabs projectId={projectId} />
 
       <div className="flex gap-6">
-        {/* Left 1/3: Project Info Card */}
+        {/* Left 1/3: Property Owner, Address, Description, Notes */}
         <div className="w-1/3 space-y-6">
+          {/* Property Owner */}
           <div className="bg-card-bg rounded-lg border border-border p-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">Client</h2>
+              <h2 className="text-sm font-semibold text-foreground">Property Owner</h2>
               <button
                 onClick={openEditModal}
                 className="px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
@@ -526,32 +304,44 @@ export default function ProjectDetailPage() {
                 Edit Project
               </button>
             </div>
-            <p className="text-sm font-medium">{project.clientFirstName} {project.clientLastName}</p>
-            {project.clientEmail && <p className="text-xs text-muted">{project.clientEmail}</p>}
-            {project.clientPhone && <p className="text-xs text-muted">{project.clientPhone}</p>}
+            {owner ? (
+              <>
+                <p className="text-sm font-medium">{owner.name}</p>
+                {owner.email && <p className="text-xs text-muted">{owner.email}</p>}
+                {owner.phone && <p className="text-xs text-muted">{owner.phone}</p>}
+              </>
+            ) : (
+              <p className="text-sm text-muted italic">No property owner assigned.</p>
+            )}
+          </div>
 
-            <h2 className="text-sm font-semibold text-foreground mt-4 mb-2">Site Address</h2>
+          {/* Site Address */}
+          <div className="bg-card-bg rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold text-foreground mb-2">Site Address</h2>
             <p className="text-xs text-muted">{project.siteAddressLine1}</p>
             {project.siteAddressLine2 && <p className="text-xs text-muted">{project.siteAddressLine2}</p>}
             <p className="text-xs text-muted">
               {project.siteCity}, {project.siteState} {project.sitePostalCode}
             </p>
-
-            {project.description && (
-              <>
-                <h2 className="text-sm font-semibold text-foreground mt-4 mb-2">Description</h2>
-                <p className="text-xs text-muted whitespace-pre-wrap">{project.description}</p>
-              </>
-            )}
-
-            {project.buildingPlanSummary && (
-              <>
-                <h2 className="text-sm font-semibold text-foreground mt-4 mb-2">Building Plan Summary</h2>
-                <p className="text-xs text-muted whitespace-pre-wrap">{project.buildingPlanSummary}</p>
-              </>
-            )}
           </div>
 
+          {/* Description */}
+          {project.description && (
+            <div className="bg-card-bg rounded-lg border border-border p-5">
+              <h2 className="text-sm font-semibold text-foreground mb-2">Description</h2>
+              <p className="text-xs text-muted whitespace-pre-wrap">{project.description}</p>
+            </div>
+          )}
+
+          {/* Building Plan Summary */}
+          {project.buildingPlanSummary && (
+            <div className="bg-card-bg rounded-lg border border-border p-5">
+              <h2 className="text-sm font-semibold text-foreground mb-2">Building Plan Summary</h2>
+              <p className="text-xs text-muted whitespace-pre-wrap">{project.buildingPlanSummary}</p>
+            </div>
+          )}
+
+          {/* Private Notes */}
           <div className="bg-card-bg rounded-lg border border-border p-5">
             <PrivateNotesList
               notes={notes.map((n) => ({ id: n.id, tenantId: n.tenantId, note: n.note, createdAt: n.createdAt }))}
@@ -560,144 +350,57 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Right 2/3: Professionals & Materials */}
+        {/* Right 2/3: Project Summary */}
         <div className="w-2/3 space-y-6">
-          {actionError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-              {actionError}
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Assigned Materials</h2>
-            <button
-              onClick={openAssignProModal}
-              className="px-3 py-1 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-            >
-              Assign Professional
-            </button>
-          </div>
+          <div className="bg-card-bg rounded-lg border border-border p-5">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Project Summary</h2>
 
-          {professionals.length === 0 && clientMaterials.length === 0 ? (
-            <p className="text-sm text-muted italic">No professionals or materials assigned yet.</p>
-          ) : (
-            <>
-              {professionals.map((pro) => (
-                <div key={pro.projectProfessionalId} className="bg-card-bg rounded-lg border border-border p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h3 className="font-medium text-foreground">{pro.businessName}</h3>
-                      <p className="text-xs text-muted">
-                        {pro.primarySpecialty} &middot; {pro.contactName}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openProMaterialModal(pro.projectProfessionalId, pro.businessName)}
-                        className="px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-                      >
-                        Add Material
-                      </button>
-                      <button
-                        onClick={() => removeProfessional(pro.projectProfessionalId)}
-                        className="px-3 py-1 text-xs border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-
-                  {pro.materials.length === 0 ? (
-                    <p className="text-sm text-muted italic">No materials assigned.</p>
-                  ) : (
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left py-2 font-medium text-muted">Material</th>
-                          <th className="text-left py-2 font-medium text-muted">Primary Use</th>
-                          <th className="text-left py-2 font-medium text-muted">Notes</th>
-                          <th className="text-right py-2 font-medium text-muted w-20"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pro.materials.map((mat) => (
-                          <tr key={mat.id} className="border-b border-border">
-                            <td className="py-2 text-foreground">{mat.name}</td>
-                            <td className="py-2 text-muted">{mat.primaryUse || '-'}</td>
-                            <td className="py-2 text-muted">{mat.notes || '-'}</td>
-                            <td className="py-2 text-right">
-                              <button
-                                onClick={() => removeProMaterial(mat.id)}
-                                className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              ))}
-
-              {clientMaterials.length > 0 && (
-                <div className="bg-card-bg rounded-lg border border-border p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium text-foreground">Client-Directed Materials</h3>
-                    <button
-                      onClick={openClientMaterialModal}
-                      className="px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-                    >
-                      Add Material
-                    </button>
-                  </div>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-2 font-medium text-muted">Material</th>
-                        <th className="text-left py-2 font-medium text-muted">Primary Use</th>
-                        <th className="text-left py-2 font-medium text-muted">Notes</th>
-                        <th className="text-right py-2 font-medium text-muted w-20"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {clientMaterials.map((mat) => (
-                        <tr key={mat.id} className="border-b border-border">
-                          <td className="py-2 text-foreground">{mat.name}</td>
-                          <td className="py-2 text-muted">{mat.primaryUse || '-'}</td>
-                          <td className="py-2 text-muted">{mat.notes || '-'}</td>
-                          <td className="py-2 text-right">
-                            <button
-                              onClick={() => removeClientMaterial(mat.id)}
-                              className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                            >
-                              Remove
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Show Add Client Material button when no client materials yet but professionals exist */}
-          {clientMaterials.length === 0 && (
-            <div className="bg-card-bg rounded-lg border border-border p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-medium text-foreground">Client-Directed Materials</h3>
-                <button
-                  onClick={openClientMaterialModal}
-                  className="px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-                >
-                  Add Material
-                </button>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted">Type</span>
+                <span className="text-sm font-medium text-foreground">{projectTypeLabel}</span>
               </div>
-              <p className="text-sm text-muted italic">No client-directed materials yet.</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted">Status</span>
+                <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_STYLES[project.status]}`}>
+                  {STATUS_LABELS[project.status]}
+                </span>
+              </div>
+
+              <hr className="border-border my-3" />
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted">Team</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {teamSummary.totalParticipants} participant{teamSummary.totalParticipants !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {teamSummary.roles.length > 0 ? (
+                  <ul className="space-y-1 ml-2">
+                    {teamSummary.roles.map(({ role, count }) => (
+                      <li key={role} className="text-xs text-muted flex items-center gap-2">
+                        <span className="w-1 h-1 bg-muted rounded-full flex-shrink-0" />
+                        {count} {ROLE_LABELS[role] || role}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted italic ml-2">No team members assigned yet.</p>
+                )}
+              </div>
+
+              <div className="pt-3">
+                <Link
+                  href={`/projects/${projectId}/team`}
+                  className="text-sm text-primary hover:text-primary-dark font-medium inline-flex items-center gap-1"
+                >
+                  View Team &rarr;
+                </Link>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -769,20 +472,6 @@ export default function ProjectDetailPage() {
               />
             </div>
           )}
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Client</label>
-            <select
-              value={editForm.clientId}
-              onChange={(e) => setEditForm({ ...editForm, clientId: e.target.value })}
-              className={inputClass}
-            >
-              <option value="">Select a client</option>
-              {allClients.map((c) => (
-                <option key={c.id} value={c.id}>{c.firstName} {c.lastName}</option>
-              ))}
-            </select>
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Description</label>
@@ -870,161 +559,11 @@ export default function ProjectDetailPage() {
             </button>
             <button
               onClick={saveEditProject}
-              disabled={editSaving || !editForm.name || !editForm.clientId}
+              disabled={editSaving || !editForm.name}
               className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50"
             >
               {editSaving ? 'Saving...' : 'Save Changes'}
             </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Assign Professional Modal */}
-      <Modal isOpen={showAssignProModal} onClose={() => setShowAssignProModal(false)} title="Assign Professional">
-        <div className="space-y-4">
-          {allProfessionals.length === 0 ? (
-            <p className="text-sm text-muted italic">No unassigned professionals available.</p>
-          ) : (
-            <select
-              value={selectedProfessionalId}
-              onChange={(e) => setSelectedProfessionalId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Select a professional</option>
-              {allProfessionals.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.businessName} - {p.primarySpecialty} ({p.contactName})
-                </option>
-              ))}
-            </select>
-          )}
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => setShowAssignProModal(false)}
-              className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={assignProfessional}
-              disabled={assignProSaving || !selectedProfessionalId}
-              className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50"
-            >
-              {assignProSaving ? 'Assigning...' : 'Assign'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Add Material to Professional Modal */}
-      <Modal
-        isOpen={showProMaterialModal}
-        onClose={() => setShowProMaterialModal(false)}
-        title={`Add Material - ${proMaterialTarget?.businessName || ''}`}
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Material</label>
-            <select
-              value={selectedMaterialId}
-              onChange={(e) => setSelectedMaterialId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Select a material</option>
-              {allMaterials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}{m.primaryUse ? ` (${m.primaryUse})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Notes (optional)</label>
-            <input
-              type="text"
-              value={materialNotes}
-              onChange={(e) => setMaterialNotes(e.target.value)}
-              maxLength={500}
-              placeholder="Optional notes..."
-              className={inputClass}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => setShowProMaterialModal(false)}
-              className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={addProMaterial}
-              disabled={proMaterialSaving || !selectedMaterialId}
-              className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50"
-            >
-              {proMaterialSaving ? 'Adding...' : 'Add Material'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Add Client-Directed Material Modal */}
-      <Modal
-        isOpen={showClientMaterialModal}
-        onClose={() => setShowClientMaterialModal(false)}
-        title="Add Client-Directed Material"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Material</label>
-            <select
-              value={clientMaterialId}
-              onChange={(e) => setClientMaterialId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Select a material</option>
-              {allMaterials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}{m.primaryUse ? ` (${m.primaryUse})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Notes (optional)</label>
-            <input
-              type="text"
-              value={clientMaterialNotes}
-              onChange={(e) => setClientMaterialNotes(e.target.value)}
-              maxLength={500}
-              placeholder="Optional notes..."
-              className={inputClass}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => setShowClientMaterialModal(false)}
-              className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={addClientMaterial}
-              disabled={clientMaterialSaving || !clientMaterialId}
-              className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50"
-            >
-              {clientMaterialSaving ? 'Adding...' : 'Add Material'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Confirm Modal */}
-      <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)} title="Confirm">
-        <div className="space-y-4">
-          <p className="text-sm text-foreground">{confirmMessage}</p>
-          <div className="flex justify-end gap-2">
-            <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors">Cancel</button>
-            <button onClick={() => { confirmAction?.(); setShowConfirmModal(false); }} className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Confirm</button>
           </div>
         </div>
       </Modal>

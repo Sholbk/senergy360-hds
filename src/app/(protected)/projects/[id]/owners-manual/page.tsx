@@ -13,9 +13,9 @@ interface ManualEntry {
   category: string;
   materialName: string | null;
   materialId: string | null;
-  professionalName: string | null;
-  professionalId: string | null;
-  professionalContact: string | null;
+  organizationName: string | null;
+  organizationId: string | null;
+  organizationContact: string | null;
   warrantyInfo: string | null;
   warrantyExpiry: string | null;
   contactInfo: string | null;
@@ -66,7 +66,7 @@ export default function OwnersManualPage() {
     // Fetch entries with joins
     const { data: entriesData } = await supabase
       .from('owners_manual_entries')
-      .select('id, category, material_id, professional_id, warranty_info, warranty_expiry, contact_info, notes, materials(name), professionals(business_name, primary_first_name, primary_last_name, primary_phone, primary_email)')
+      .select('id, category, material_id, organization_id, warranty_info, warranty_expiry, contact_info, notes, materials(name), organizations(business_name, primary_first_name, primary_last_name, primary_phone, primary_email)')
       .eq('project_id', projectId)
       .order('category', { ascending: true });
 
@@ -76,18 +76,18 @@ export default function OwnersManualPage() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const material = entry.materials as any;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const professional = entry.professionals as any;
+          const org = entry.organizations as any;
           return {
             id: entry.id,
             category: entry.category,
             materialName: material?.name || null,
             materialId: entry.material_id,
-            professionalName: professional?.business_name || null,
-            professionalId: entry.professional_id,
-            professionalContact: professional
-              ? `${professional.primary_first_name || ''} ${professional.primary_last_name || ''}`.trim() +
-                (professional.primary_phone ? ` | ${professional.primary_phone}` : '') +
-                (professional.primary_email ? ` | ${professional.primary_email}` : '')
+            organizationName: org?.business_name || null,
+            organizationId: entry.organization_id,
+            organizationContact: org
+              ? `${org.primary_first_name || ''} ${org.primary_last_name || ''}`.trim() +
+                (org.primary_phone ? ` | ${org.primary_phone}` : '') +
+                (org.primary_email ? ` | ${org.primary_email}` : '')
               : null,
             warrantyInfo: entry.warranty_info,
             warrantyExpiry: entry.warranty_expiry,
@@ -118,7 +118,7 @@ export default function OwnersManualPage() {
       project_id: projectId,
       category: data.category.trim(),
       material_id: data.materialId || null,
-      professional_id: data.professionalId || null,
+      organization_id: data.professionalId || null,
       warranty_info: data.warrantyInfo.trim() || null,
       warranty_expiry: data.warrantyExpiry || null,
       contact_info: data.contactInfo.trim() || null,
@@ -147,7 +147,7 @@ export default function OwnersManualPage() {
       .update({
         category: data.category.trim(),
         material_id: data.materialId || null,
-        professional_id: data.professionalId || null,
+        organization_id: data.professionalId || null,
         warranty_info: data.warrantyInfo.trim() || null,
         warranty_expiry: data.warrantyExpiry || null,
         contact_info: data.contactInfo.trim() || null,
@@ -251,12 +251,12 @@ export default function OwnersManualPage() {
                             <p className="text-sm text-foreground">{entry.materialName}</p>
                           </div>
                         )}
-                        {entry.professionalName && (
+                        {entry.organizationName && (
                           <div>
-                            <span className="text-xs font-medium text-muted">Professional:</span>
-                            <p className="text-sm text-foreground">{entry.professionalName}</p>
-                            {entry.professionalContact && (
-                              <p className="text-xs text-muted">{entry.professionalContact}</p>
+                            <span className="text-xs font-medium text-muted">Organization:</span>
+                            <p className="text-sm text-foreground">{entry.organizationName}</p>
+                            {entry.organizationContact && (
+                              <p className="text-xs text-muted">{entry.organizationContact}</p>
                             )}
                           </div>
                         )}
@@ -339,7 +339,7 @@ export default function OwnersManualPage() {
             initialData={{
               category: editEntry.category,
               materialId: editEntry.materialId || '',
-              professionalId: editEntry.professionalId || '',
+              professionalId: editEntry.organizationId || '',
               warrantyInfo: editEntry.warrantyInfo || '',
               warrantyExpiry: editEntry.warrantyExpiry || '',
               contactInfo: editEntry.contactInfo || '',

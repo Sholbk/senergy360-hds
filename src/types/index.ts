@@ -4,7 +4,13 @@
 
 // -- Enums --
 
-export type UserRole = 'admin' | 'client' | 'professional';
+export type UserRole = 'admin' | 'property_owner' | 'architect' | 'general_contractor' | 'trade';
+
+export type OrgType = 'property_owner' | 'architect' | 'general_contractor' | 'trade' | 'other';
+
+export type ProjectRole = 'property_owner' | 'architect' | 'general_contractor' | 'trade';
+
+export type EmailType = 'invitation' | 'material_instructions' | 'document_share' | 'custom';
 
 export type ProjectStatus = 'draft' | 'in_progress' | 'completed';
 
@@ -45,8 +51,7 @@ export interface PrivateNote {
   note: string;
   createdAt: string;
   materialId?: string;
-  professionalId?: string;
-  clientId?: string;
+  organizationId?: string;
   projectId?: string;
   createdBy?: string;
 }
@@ -94,9 +99,12 @@ export interface Material {
 
 // -- Project Objects --
 
-export interface Client {
+export interface Organization {
   id: string;
   tenantId: string;
+  orgType: OrgType;
+  businessName?: string;
+  specialty?: string;
   primaryFirstName: string;
   primaryLastName: string;
   primaryPhone?: string;
@@ -105,42 +113,16 @@ export interface Client {
   secondaryLastName?: string;
   secondaryPhone?: string;
   secondaryEmail?: string;
-  billingAddressLine1?: string;
-  billingAddressLine2?: string;
-  billingCity?: string;
-  billingState?: string;
-  billingPostalCode?: string;
-  billingCountry?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
   userId?: string;
   createdAt: string;
   updatedAt: string;
-  projects?: Project[];
-  privateNotes?: PrivateNote[];
-}
-
-export interface Professional {
-  id: string;
-  tenantId: string;
-  businessName: string;
-  primarySpecialty: string;
-  primaryFirstName: string;
-  primaryLastName: string;
-  primaryPhone?: string;
-  primaryEmail?: string;
-  secondaryFirstName?: string;
-  secondaryLastName?: string;
-  secondaryPhone?: string;
-  secondaryEmail?: string;
-  businessAddressLine1?: string;
-  businessAddressLine2?: string;
-  businessCity?: string;
-  businessState?: string;
-  businessPostalCode?: string;
-  businessCountry?: string;
-  userId?: string;
-  createdAt: string;
-  updatedAt: string;
-  privateNotes?: PrivateNote[];
+  deletedAt?: string;
 }
 
 export interface Project {
@@ -150,7 +132,6 @@ export interface Project {
   status: ProjectStatus;
   projectType: ProjectType;
   projectTypeOtherDescription?: string;
-  clientId: string;
   description?: string;
   buildingPlanSummary?: string;
   siteAddressLine1: string;
@@ -163,33 +144,32 @@ export interface Project {
   startedOn?: string;
   completedOn?: string;
   updatedAt: string;
-  client?: Client;
-  professionals?: ProjectProfessional[];
-  clientDirectedMaterials?: ProjectClientMaterial[];
+  participants?: ProjectParticipant[];
   privateNotes?: PrivateNote[];
 }
 
-export interface ProjectProfessional {
+export interface ProjectParticipant {
   id: string;
   projectId: string;
-  professionalId: string;
-  professional?: Professional;
-  materials?: ProjectProfessionalMaterial[];
+  organizationId: string;
+  projectRole: ProjectRole;
+  parentParticipantId?: string;
+  invitedAt?: string;
+  acceptedAt?: string;
+  notes?: string;
+  createdAt: string;
+  organization?: Organization;
+  materials?: ProjectParticipantMaterial[];
+  childParticipants?: ProjectParticipant[];
 }
 
-export interface ProjectProfessionalMaterial {
+export interface ProjectParticipantMaterial {
   id: string;
-  projectProfessionalId: string;
+  projectParticipantId: string;
   materialId: string;
   notes?: string;
-  material?: Material;
-}
-
-export interface ProjectClientMaterial {
-  id: string;
-  projectId: string;
-  materialId: string;
-  notes?: string;
+  isOwnerDirected: boolean;
+  createdAt: string;
   material?: Material;
 }
 
@@ -252,7 +232,7 @@ export interface Document {
   id: string;
   tenantId: string;
   projectId?: string;
-  clientId?: string;
+  organizationId?: string;
   documentType: DocumentType;
   title: string;
   description?: string;
@@ -280,8 +260,7 @@ export interface DocumentAccess {
   id: string;
   documentId: string;
   userId?: string;
-  professionalId?: string;
-  clientId?: string;
+  organizationId?: string;
   grantedAt: string;
   grantedBy?: string;
 }
@@ -325,7 +304,7 @@ export interface FeedComment {
 export interface Invoice {
   id: string;
   tenantId: string;
-  clientId: string;
+  organizationId: string;
   projectId?: string;
   invoiceNumber: string;
   status: InvoiceStatus;
@@ -340,7 +319,7 @@ export interface Invoice {
   createdAt: string;
   updatedAt: string;
   lineItems?: InvoiceLineItem[];
-  client?: Client;
+  organization?: Organization;
   project?: Project;
 }
 
@@ -363,7 +342,7 @@ export interface OwnersManualEntry {
   projectId: string;
   category: string;
   materialId?: string;
-  professionalId?: string;
+  organizationId?: string;
   warrantyInfo?: string;
   warrantyExpiry?: string;
   contactInfo?: string;
@@ -372,7 +351,7 @@ export interface OwnersManualEntry {
   createdAt: string;
   updatedAt: string;
   material?: Material;
-  professional?: Professional;
+  organization?: Organization;
 }
 
 // -- Checklists --
@@ -399,6 +378,37 @@ export interface ChecklistItem {
   sortOrder: number;
   mainCategory?: MainCategory;
   subCategory?: SubCategory;
+}
+
+// -- Email Log --
+
+export interface EmailLog {
+  id: string;
+  tenantId: string;
+  projectId?: string;
+  organizationId?: string;
+  sentBy?: string;
+  recipientEmail: string;
+  subject: string;
+  bodyHtml?: string;
+  sentAt: string;
+  resendMessageId?: string;
+  emailType?: EmailType;
+}
+
+// -- Report Photos --
+
+export interface ReportPhoto {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  storagePath: string;
+  fileName?: string;
+  caption?: string;
+  category?: string;
+  sortOrder: number;
+  uploadedBy?: string;
+  createdAt: string;
 }
 
 // -- Leads (marketing site) --

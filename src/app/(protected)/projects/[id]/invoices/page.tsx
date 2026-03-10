@@ -44,13 +44,13 @@ export default function ProjectInvoicesPage() {
     // Load project info
     const { data: project } = await supabase
       .from('projects')
-      .select('name, client_id, clients(primary_first_name, primary_last_name)')
+      .select('name, organization_id, organizations(business_name, primary_first_name, primary_last_name)')
       .eq('id', projectId)
       .single();
 
     if (project) {
       setProjectName(project.name);
-      setClientId(project.client_id);
+      setClientId(project.organization_id);
     }
 
     // Check admin
@@ -69,7 +69,7 @@ export default function ProjectInvoicesPage() {
     // Fetch invoices for this project
     const { data: invoicesData } = await supabase
       .from('invoices')
-      .select('id, invoice_number, status, total_cents, due_date, created_at, clients(primary_first_name, primary_last_name)')
+      .select('id, invoice_number, status, total_cents, due_date, created_at, organizations(business_name, primary_first_name, primary_last_name)')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
 
@@ -77,7 +77,7 @@ export default function ProjectInvoicesPage() {
       setInvoices(
         invoicesData.map((inv) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const client = inv.clients as any;
+          const org = inv.organizations as any;
           return {
             id: inv.id,
             invoiceNumber: inv.invoice_number,
@@ -85,8 +85,8 @@ export default function ProjectInvoicesPage() {
             totalCents: inv.total_cents,
             dueDate: inv.due_date,
             createdAt: inv.created_at,
-            clientName: client
-              ? `${client.primary_first_name} ${client.primary_last_name}`
+            clientName: org
+              ? org.business_name || `${org.primary_first_name} ${org.primary_last_name}`
               : '',
           };
         })

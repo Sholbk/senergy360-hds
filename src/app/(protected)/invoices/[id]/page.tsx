@@ -59,7 +59,7 @@ export default function InvoiceDetailPage() {
     // Fetch invoice
     const { data: inv } = await supabase
       .from('invoices')
-      .select('*, clients(primary_first_name, primary_last_name, primary_email, primary_phone), projects(name)')
+      .select('*, organizations(business_name, primary_first_name, primary_last_name, primary_email, primary_phone), projects(name)')
       .eq('id', invoiceId)
       .single();
 
@@ -76,7 +76,7 @@ export default function InvoiceDetailPage() {
       .order('created_at', { ascending: true });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = inv.clients as any;
+    const org = inv.organizations as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const project = inv.projects as any;
 
@@ -90,11 +90,11 @@ export default function InvoiceDetailPage() {
       dueDate: inv.due_date,
       createdAt: inv.created_at,
       notes: inv.notes,
-      clientName: client
-        ? `${client.primary_first_name} ${client.primary_last_name}`
+      clientName: org
+        ? org.business_name || `${org.primary_first_name} ${org.primary_last_name}`
         : '',
-      clientEmail: client?.primary_email || null,
-      clientPhone: client?.primary_phone || null,
+      clientEmail: org?.primary_email || null,
+      clientPhone: org?.primary_phone || null,
       projectName: project?.name || null,
       lineItems: (lineItemsData || []).map((li) => ({
         id: li.id,

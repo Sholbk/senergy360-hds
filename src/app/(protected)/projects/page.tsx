@@ -13,8 +13,7 @@ interface ProjectRow {
   name: string;
   status: string;
   projectType: string;
-  clientName: string;
-  clientId: string;
+  ownerName: string;
   siteCity: string;
   siteState: string;
   createdOn: string;
@@ -25,7 +24,7 @@ interface ProjectRow {
 export default function ProjectsPage() {
   const [supabase] = useState(() => createClient());
   const [projects, setProjects] = useState<ProjectRow[]>([]);
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [propertyOwners, setPropertyOwners] = useState<{ id: string; name: string }[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -35,7 +34,7 @@ export default function ProjectsPage() {
   const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    clientId: '',
+    propertyOwnerId: '',
     projectType: 'new_construction',
     otherDescription: '',
     description: '',
@@ -48,14 +47,11 @@ export default function ProjectsPage() {
     siteCountry: 'US',
   });
 
-  // Build a map of client IDs to names for display
-  const clientMap = new Map(clients.map((c) => [c.id, c.name]));
-
   const loadProjects = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('projects')
-      .select('id, name, status, project_type, site_city, site_state, created_on, client_id, description, building_plan_summary')
+      .select('id, name, status, project_type, site_city, site_state, created_on, description, building_plan_summary')
       .is('deleted_at', null)
       .order('created_on', { ascending: false });
 
@@ -64,14 +60,35 @@ export default function ProjectsPage() {
     }
 
     if (data) {
+      // Fetch property owner names for display
+      const projectIds = data.map((d) => d.id);
+      const ownerMap = new Map<string, string>();
+
+      if (projectIds.length > 0) {
+        const { data: participants } = await supabase
+          .from('project_participants')
+          .select('project_id, organizations(business_name, primary_first_name, primary_last_name)')
+          .in('project_id', projectIds)
+          .eq('project_role', 'property_owner');
+
+        if (participants) {
+          for (const p of participants) {
+            const org = p.organizations as unknown as { business_name: string | null; primary_first_name: string | null; primary_last_name: string | null } | null;
+            if (org) {
+              const name = org.business_name || `${org.primary_first_name} ${org.primary_last_name}`;
+              ownerMap.set(p.project_id, name);
+            }
+          }
+        }
+      }
+
       setProjects(
         data.map((d) => ({
           id: d.id,
           name: d.name,
           status: d.status,
           projectType: d.project_type,
-          clientId: d.client_id,
-          clientName: '',
+          ownerName: ownerMap.get(d.id) || '',
           siteCity: d.site_city,
           siteState: d.site_state,
           createdOn: d.created_on,
@@ -86,17 +103,19 @@ export default function ProjectsPage() {
   useEffect(() => {
     loadProjects();
 
-    // Load clients for dropdown and name display
+    // Load property owners for dropdown
     supabase
-      .from('clients')
-      .select('id, primary_first_name, primary_last_name')
+      .from('organizations')
+      .select('id, business_name, primary_first_name, primary_last_name')
+      .eq('org_type', 'property_owner')
+      .is('deleted_at', null)
       .order('primary_last_name')
       .then(({ data }) => {
         if (data) {
-          setClients(
+          setPropertyOwners(
             data.map((d) => ({
               id: d.id,
-              name: `${d.primary_first_name} ${d.primary_last_name}`,
+              name: d.business_name || `${d.primary_first_name} ${d.primary_last_name}`,
             }))
           );
         }
@@ -106,10 +125,9 @@ export default function ProjectsPage() {
   const filteredProjects = search.trim()
     ? projects.filter((p) => {
         const term = search.toLowerCase();
-        const cName = clientMap.get(p.clientId) || '';
         return (
           p.name.toLowerCase().includes(term) ||
-          cName.toLowerCase().includes(term) ||
+          p.ownerName.toLowerCase().includes(term) ||
           p.siteCity?.toLowerCase().includes(term) ||
           p.siteState?.toLowerCase().includes(term) ||
           (p.description && p.description.toLowerCase().includes(term)) ||
@@ -126,10 +144,10 @@ export default function ProjectsPage() {
 
   const handleSave = async () => {
     setFormError('');
-    if (!formData.name.trim() || !formData.clientId || !formData.siteAddressLine1.trim()) {
+    if (!formData.name.trim() || !formData.propertyOwnerId || !formData.siteAddressLine1.trim()) {
       const missing = [];
       if (!formData.name.trim()) missing.push('Project Name');
-      if (!formData.clientId) missing.push('Client');
+      if (!formData.propertyOwnerId) missing.push('Property Owner');
       if (!formData.siteAddressLine1.trim()) missing.push('Site Address');
       setFormError('Please fill in: ' + missing.join(', '));
       return;
@@ -163,7 +181,7 @@ export default function ProjectsPage() {
   const resetForm = () => {
     setFormData({
       name: '',
-      clientId: '',
+      propertyOwnerId: '',
       projectType: 'new_construction',
       otherDescription: '',
       description: '',
@@ -232,7 +250,7 @@ export default function ProjectsPage() {
                           <div>
                             <p className="font-medium text-foreground">{project.name}</p>
                             <p className="text-sm text-muted">
-                              {clientMap.get(project.clientId) || ''}{' '}
+                              {project.ownerName}{' '}
                               {[project.siteCity, project.siteState].filter(Boolean).join(', ') &&
                                 `\u00B7 ${[project.siteCity, project.siteState].filter(Boolean).join(', ')}`}
                             </p>
@@ -289,16 +307,16 @@ export default function ProjectsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                Client <span className="text-danger">*</span>
+                Property Owner <span className="text-danger">*</span>
               </label>
               <select
-                value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                value={formData.propertyOwnerId}
+                onChange={(e) => setFormData({ ...formData, propertyOwnerId: e.target.value })}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Select client...</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                <option value="">Select property owner...</option>
+                {propertyOwners.map((o) => (
+                  <option key={o.id} value={o.id}>{o.name}</option>
                 ))}
               </select>
             </div>

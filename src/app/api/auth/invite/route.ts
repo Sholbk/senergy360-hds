@@ -54,10 +54,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
     }
 
-    // Link the user to the client/professional record
-    const table = entityType === 'client' ? 'clients' : 'professionals';
+    // Link the user to the organization record
     const { error: linkError } = await adminClient
-      .from(table)
+      .from('organizations')
       .update({ user_id: newUser.user.id })
       .eq('id', entityId);
 

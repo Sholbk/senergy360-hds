@@ -38,14 +38,14 @@ export default function AllInvoicesPage() {
   const loadInvoices = useCallback(async () => {
     const { data: invoicesData } = await supabase
       .from('invoices')
-      .select('id, invoice_number, status, total_cents, due_date, created_at, client_id, project_id, clients(primary_first_name, primary_last_name), projects(name)')
+      .select('id, invoice_number, status, total_cents, due_date, created_at, organization_id, project_id, organizations(business_name, primary_first_name, primary_last_name), projects(name)')
       .order('created_at', { ascending: false });
 
     if (invoicesData) {
       setInvoices(
         invoicesData.map((inv) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const client = inv.clients as any;
+          const org = inv.organizations as any;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const project = inv.projects as any;
           return {
@@ -55,8 +55,8 @@ export default function AllInvoicesPage() {
             totalCents: inv.total_cents,
             dueDate: inv.due_date,
             createdAt: inv.created_at,
-            clientName: client
-              ? `${client.primary_first_name} ${client.primary_last_name}`
+            clientName: org
+              ? org.business_name || `${org.primary_first_name} ${org.primary_last_name}`
               : '',
             projectName: project?.name || null,
           };
@@ -96,7 +96,7 @@ export default function AllInvoicesPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by client name or invoice number..."
+            placeholder="Search by property owner name or invoice number..."
             className={inputClass}
           />
         </div>
@@ -125,7 +125,7 @@ export default function AllInvoicesPage() {
             <thead>
               <tr className="border-b border-border bg-background">
                 <th className="text-left py-3 px-4 font-medium text-muted">Invoice #</th>
-                <th className="text-left py-3 px-4 font-medium text-muted">Client</th>
+                <th className="text-left py-3 px-4 font-medium text-muted">Property Owner</th>
                 <th className="text-left py-3 px-4 font-medium text-muted">Project</th>
                 <th className="text-left py-3 px-4 font-medium text-muted">Status</th>
                 <th className="text-right py-3 px-4 font-medium text-muted">Total</th>
