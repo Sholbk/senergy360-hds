@@ -47,7 +47,8 @@ export async function uploadDocumentAction(formData: FormData) {
       .upload(storagePath, file, { contentType: file.type });
 
     if (uploadError) {
-      return { error: 'Failed to upload file. Please try again.' };
+      console.error('Storage upload error:', uploadError);
+      return { error: `Failed to upload file: ${uploadError.message}` };
     }
 
     fileName = file.name;
@@ -71,7 +72,8 @@ export async function uploadDocumentAction(formData: FormData) {
   });
 
   if (insertError) {
-    return { error: 'Failed to save document record. Please try again.' };
+    console.error('Document insert error:', insertError);
+    return { error: `Failed to save document record: ${insertError.message}` };
   }
 
   return { success: true };

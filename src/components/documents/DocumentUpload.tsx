@@ -87,8 +87,9 @@ export default function DocumentUpload({
 
       await onUpload(formData);
       resetForm();
-    } catch {
-      setError('Failed to upload document. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to upload document: ${message}`);
     } finally {
       setSaving(false);
     }

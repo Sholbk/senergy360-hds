@@ -188,8 +188,7 @@ export default function ProjectDocumentsPage() {
     setActionError('');
     const result = await uploadDocumentAction(formData);
     if (result.error) {
-      setActionError(result.error);
-      return;
+      throw new Error(result.error);
     }
     setShowUpload(false);
     await loadDocuments();
