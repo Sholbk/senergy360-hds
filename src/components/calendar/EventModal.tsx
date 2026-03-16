@@ -19,6 +19,13 @@ interface EventModalProps {
   onSaved: () => void;
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  meeting_zoom: 'Zoom Meeting',
+  meeting_google_meet: 'Google Meet Meeting',
+  meeting_in_person: 'In-Person Meeting',
+  due_date: 'Due Date',
+};
+
 export default function EventModal({
   isOpen,
   onClose,
@@ -42,11 +49,14 @@ export default function EventModal({
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [meetingLink, setMeetingLink] = useState('');
+  const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
   const isEditing = !!event;
   const isMeeting = eventType !== 'due_date';
+  const isOnline = eventType === 'meeting_zoom' || eventType === 'meeting_google_meet';
+  const isInPerson = eventType === 'meeting_in_person';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -64,6 +74,7 @@ export default function EventModal({
         setEndTime(e.toTimeString().slice(0, 5));
       }
       setMeetingLink(event.meetingLink || '');
+      setLocation(event.location || '');
       setDescription(event.description || '');
       setSelectedProjectId(event.projectId);
     } else {
@@ -82,6 +93,7 @@ export default function EventModal({
         setEndTime('10:00');
       }
       setMeetingLink('');
+      setLocation('');
       setDescription('');
       setSelectedProjectId(projectId || '');
     }
@@ -101,7 +113,7 @@ export default function EventModal({
       return;
     }
 
-    if (isMeeting && meetingLink && !isValidUrl(meetingLink)) {
+    if (isOnline && meetingLink && !isValidUrl(meetingLink)) {
       setError('Please enter a valid meeting URL.');
       return;
     }
@@ -140,7 +152,8 @@ export default function EventModal({
       event_type: eventType,
       start_time: startDateTime,
       end_time: endDateTime,
-      meeting_link: isMeeting && meetingLink.trim() ? meetingLink.trim() : null,
+      meeting_link: isOnline && meetingLink.trim() ? meetingLink.trim() : null,
+      location: (isInPerson || isOnline) && location.trim() ? location.trim() : null,
       updated_at: new Date().toISOString(),
     };
 
@@ -172,22 +185,23 @@ export default function EventModal({
 
     // Post to feed
     const resolvedPid = projectId || selectedProjectId;
-    const typeLabel = eventType === 'meeting_zoom' ? 'Zoom Meeting' : eventType === 'meeting_google_meet' ? 'Google Meet' : 'Due Date';
+    const typeLabel = TYPE_LABELS[eventType] || eventType;
     const dateLabel = new Date(startDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const timeLabel = isMeeting
       ? `${new Date(startDateTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${new Date(endDateTime!).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
       : '';
+    const locationLabel = isInPerson && location.trim() ? ` at ${location.trim()}` : '';
 
     if (isEditing) {
       await postFeedActivity(supabase, {
         projectId: resolvedPid,
-        content: `${typeLabel} updated: ${title.trim()} — ${dateLabel}${timeLabel ? ' ' + timeLabel : ''}`,
+        content: `${typeLabel} updated: ${title.trim()} — ${dateLabel}${timeLabel ? ' ' + timeLabel : ''}${locationLabel}`,
         eventType: 'event_updated',
       });
     } else {
       await postFeedActivity(supabase, {
         projectId: resolvedPid,
-        content: `${typeLabel} scheduled: ${title.trim()} — ${dateLabel}${timeLabel ? ' ' + timeLabel : ''}`,
+        content: `${typeLabel} scheduled: ${title.trim()} — ${dateLabel}${timeLabel ? ' ' + timeLabel : ''}${locationLabel}`,
         eventType: 'event_scheduled',
       });
     }
@@ -212,8 +226,7 @@ export default function EventModal({
       return;
     }
 
-    // Post to feed
-    const typeLabel = event.eventType === 'meeting_zoom' ? 'Zoom Meeting' : event.eventType === 'meeting_google_meet' ? 'Google Meet' : 'Due Date';
+    const typeLabel = TYPE_LABELS[event.eventType] || event.eventType;
     await postFeedActivity(supabase, {
       projectId: event.projectId,
       content: `${typeLabel} cancelled: ${event.title}`,
@@ -223,6 +236,8 @@ export default function EventModal({
     onSaved();
     onClose();
   };
+
+  const inputClass = 'w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit Event' : 'New Event'}>
@@ -239,7 +254,7 @@ export default function EventModal({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputClass}
             placeholder="Event title"
           />
         </div>
@@ -249,10 +264,11 @@ export default function EventModal({
           <select
             value={eventType}
             onChange={(e) => setEventType(e.target.value as CalendarEventType)}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputClass}
           >
             <option value="meeting_zoom">Zoom Meeting</option>
             <option value="meeting_google_meet">Google Meet Meeting</option>
+            <option value="meeting_in_person">In-Person Meeting</option>
             <option value="due_date">Due Date</option>
           </select>
         </div>
@@ -263,7 +279,7 @@ export default function EventModal({
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+              className={inputClass}
             >
               <option value="">Select a project...</option>
               {projects.map((p) => (
@@ -279,7 +295,7 @@ export default function EventModal({
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputClass}
           />
         </div>
 
@@ -291,7 +307,7 @@ export default function EventModal({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={inputClass}
               />
             </div>
             <div>
@@ -300,21 +316,34 @@ export default function EventModal({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={inputClass}
               />
             </div>
           </div>
         )}
 
-        {isMeeting && (
+        {isInPerson && (
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className={inputClass}
+              placeholder="123 Main St, City, State 12345"
+            />
+          </div>
+        )}
+
+        {isOnline && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Meeting Link</label>
             <input
               type="url"
               value={meetingLink}
               onChange={(e) => setMeetingLink(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+              className={inputClass}
+              placeholder={eventType === 'meeting_zoom' ? 'https://zoom.us/j/...' : 'https://meet.google.com/...'}
             />
           </div>
         )}
@@ -325,7 +354,7 @@ export default function EventModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            className={`${inputClass} resize-none`}
             placeholder="Optional details..."
           />
         </div>

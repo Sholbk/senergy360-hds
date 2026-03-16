@@ -439,7 +439,7 @@ export interface Lead {
 
 // -- Calendar Events --
 
-export type CalendarEventType = 'meeting_zoom' | 'meeting_google_meet' | 'due_date';
+export type CalendarEventType = 'meeting_zoom' | 'meeting_google_meet' | 'meeting_in_person' | 'due_date';
 
 export interface CalendarEvent {
   id: string;
@@ -451,6 +451,7 @@ export interface CalendarEvent {
   startTime: string;
   endTime?: string;
   meetingLink?: string;
+  location?: string;
   createdBy?: string;
   assignedTo?: string;
   createdAt: string;

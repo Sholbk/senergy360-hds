@@ -58,6 +58,7 @@ export function useCalendarEvents({
           startTime: row.start_time as string,
           endTime: (row.end_time as string) || undefined,
           meetingLink: (row.meeting_link as string) || undefined,
+          location: (row.location as string) || undefined,
           createdBy: (row.created_by as string) || undefined,
           assignedTo: (row.assigned_to as string) || undefined,
           createdAt: row.created_at as string,

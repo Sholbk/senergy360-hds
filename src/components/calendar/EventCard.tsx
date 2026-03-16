@@ -12,12 +12,14 @@ interface EventCardProps {
 const EVENT_COLORS: Record<string, { border: string; bg: string; text: string }> = {
   meeting_zoom: { border: 'border-l-primary', bg: 'bg-primary-bg', text: 'text-primary-dark' },
   meeting_google_meet: { border: 'border-l-info', bg: 'bg-blue-50', text: 'text-info' },
+  meeting_in_person: { border: 'border-l-success', bg: 'bg-green-50', text: 'text-success' },
   due_date: { border: 'border-l-warning', bg: 'bg-orange-50', text: 'text-warning' },
 };
 
 const EVENT_LABELS: Record<string, string> = {
   meeting_zoom: 'Zoom',
   meeting_google_meet: 'Google Meet',
+  meeting_in_person: 'In-Person',
   due_date: 'Due Date',
 };
 
