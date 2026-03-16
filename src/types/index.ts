@@ -422,3 +422,26 @@ export interface Lead {
   sourcePage?: string;
   createdAt: string;
 }
+
+// -- Calendar Events --
+
+export type CalendarEventType = 'meeting_zoom' | 'meeting_google_meet' | 'due_date';
+
+export interface CalendarEvent {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  eventType: CalendarEventType;
+  startTime: string;
+  endTime?: string;
+  meetingLink?: string;
+  createdBy?: string;
+  assignedTo?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  // Joined fields
+  projectName?: string;
+}
