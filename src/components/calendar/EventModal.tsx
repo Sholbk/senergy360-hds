@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
 import { createClient } from '@/lib/supabase/client';
+import { postFeedActivity } from '@/lib/feedActivity';
 import type { CalendarEvent, CalendarEventType } from '@/types';
 
 interface EventModalProps {
@@ -169,6 +170,28 @@ export default function EventModal({
       return;
     }
 
+    // Post to feed
+    const resolvedPid = projectId || selectedProjectId;
+    const typeLabel = eventType === 'meeting_zoom' ? 'Zoom Meeting' : eventType === 'meeting_google_meet' ? 'Google Meet' : 'Due Date';
+    const dateLabel = new Date(startDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeLabel = isMeeting
+      ? `${new Date(startDateTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${new Date(endDateTime!).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+      : '';
+
+    if (isEditing) {
+      await postFeedActivity(supabase, {
+        projectId: resolvedPid,
+        content: `${typeLabel} updated: ${title.trim()} — ${dateLabel}${timeLabel ? ' ' + timeLabel : ''}`,
+        eventType: 'event_updated',
+      });
+    } else {
+      await postFeedActivity(supabase, {
+        projectId: resolvedPid,
+        content: `${typeLabel} scheduled: ${title.trim()} — ${dateLabel}${timeLabel ? ' ' + timeLabel : ''}`,
+        eventType: 'event_scheduled',
+      });
+    }
+
     onSaved();
     onClose();
   };
@@ -188,6 +211,14 @@ export default function EventModal({
       setError(err.message || 'Failed to delete event.');
       return;
     }
+
+    // Post to feed
+    const typeLabel = event.eventType === 'meeting_zoom' ? 'Zoom Meeting' : event.eventType === 'meeting_google_meet' ? 'Google Meet' : 'Due Date';
+    await postFeedActivity(supabase, {
+      projectId: event.projectId,
+      content: `${typeLabel} cancelled: ${event.title}`,
+      eventType: 'event_deleted',
+    });
 
     onSaved();
     onClose();

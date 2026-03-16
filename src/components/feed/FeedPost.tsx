@@ -35,8 +35,18 @@ interface FeedPostProps {
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   document_shared: 'Document Shared',
+  document_signed: 'Document Signed',
+  document_deleted: 'Document Deleted',
   hds_sent: 'HDS Report Sent',
   invoice_sent: 'Invoice Sent',
+  event_scheduled: 'Meeting Scheduled',
+  event_updated: 'Meeting Updated',
+  event_deleted: 'Meeting Cancelled',
+  checklist_item_added: 'Checklist Updated',
+  checklist_item_completed: 'Checklist Item Completed',
+  participant_added: 'Team Updated',
+  participant_removed: 'Team Updated',
+  material_assigned: 'Material Assigned',
 };
 
 export default function FeedPost({

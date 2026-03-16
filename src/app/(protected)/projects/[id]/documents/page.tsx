@@ -8,6 +8,7 @@ import DocumentList from '@/components/documents/DocumentList';
 import DocumentUpload from '@/components/documents/DocumentUpload';
 import DocumentShareModal from '@/components/documents/DocumentShareModal';
 import SignatureCanvas from '@/components/documents/SignatureCanvas';
+import { postFeedActivity } from '@/lib/feedActivity';
 import {
   uploadDocumentAction,
   shareDocumentAction,
@@ -190,6 +191,12 @@ export default function ProjectDocumentsPage() {
     if (result.error) {
       throw new Error(result.error);
     }
+    const docTitle = formData.get('title') as string || 'a document';
+    await postFeedActivity(supabase, {
+      projectId,
+      content: `Document uploaded: ${docTitle}`,
+      eventType: 'document_shared',
+    });
     setShowUpload(false);
     await loadDocuments();
   };
@@ -225,6 +232,11 @@ export default function ProjectDocumentsPage() {
       setActionError(result.error);
       return;
     }
+    await postFeedActivity(supabase, {
+      projectId,
+      content: `Document deleted: ${doc.title}`,
+      eventType: 'document_deleted',
+    });
     await loadDocuments();
   };
 

@@ -267,7 +267,21 @@ export interface DocumentAccess {
 
 // -- Feed --
 
-export type FeedEventType = 'document_shared' | 'hds_sent' | 'invoice_sent' | 'manual_post';
+export type FeedEventType =
+  | 'manual_post'
+  | 'document_shared'
+  | 'document_signed'
+  | 'document_deleted'
+  | 'hds_sent'
+  | 'invoice_sent'
+  | 'event_scheduled'
+  | 'event_updated'
+  | 'event_deleted'
+  | 'checklist_item_added'
+  | 'checklist_item_completed'
+  | 'participant_added'
+  | 'participant_removed'
+  | 'material_assigned';
 
 export interface FeedPost {
   id: string;

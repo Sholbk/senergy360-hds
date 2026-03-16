@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Modal from '@/components/ui/Modal';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import { isValidUUID } from '@/lib/utils';
+import { postFeedActivity } from '@/lib/feedActivity';
 
 // --- Interfaces ---
 
@@ -264,6 +265,14 @@ export default function ProjectTeamPage() {
     if (error) {
       setActionError('Failed to add participant. Please try again.');
     } else {
+      const org = allOrgs.find((o) => o.id === addForm.organizationId);
+      const orgName = org?.businessName || `${org?.primaryFirstName || ''} ${org?.primaryLastName || ''}`.trim() || 'a participant';
+      const roleLabel = ROLE_LABELS[addForm.projectRole] || addForm.projectRole;
+      await postFeedActivity(supabase, {
+        projectId,
+        content: `${orgName} added to project as ${roleLabel}`,
+        eventType: 'participant_added',
+      });
       setShowAddModal(false);
       await loadParticipants();
     }
@@ -315,6 +324,13 @@ export default function ProjectTeamPage() {
     if (error) {
       setActionError('Failed to add trade. Please try again.');
     } else {
+      const org = allOrgs.find((o) => o.id === tradeForm.organizationId);
+      const orgName = org?.businessName || `${org?.primaryFirstName || ''} ${org?.primaryLastName || ''}`.trim() || 'a trade';
+      await postFeedActivity(supabase, {
+        projectId,
+        content: `${orgName} added to project as Trade`,
+        eventType: 'participant_added',
+      });
       setShowAddTradeModal(false);
       await loadParticipants();
     }
@@ -348,6 +364,12 @@ export default function ProjectTeamPage() {
     if (error) {
       setActionError('Failed to add material. Please try again.');
     } else {
+      const mat = allMaterials.find((m) => m.id === selectedMaterialId);
+      await postFeedActivity(supabase, {
+        projectId,
+        content: `Material assigned to ${materialTarget.orgName}: ${mat?.name || 'material'}`,
+        eventType: 'material_assigned',
+      });
       setShowMaterialModal(false);
       await loadParticipants();
     }
@@ -373,10 +395,18 @@ export default function ProjectTeamPage() {
   const removeParticipant = (participantId: string) => {
     requestConfirm('Remove this participant and all their assigned materials from the project?', async () => {
       setActionError('');
+      const removedP = participants.find((p) => p.id === participantId);
       const { error } = await supabase.from('project_participants').delete().eq('id', participantId);
       if (error) {
         setActionError('Failed to remove participant. Please try again.');
       } else {
+        if (removedP) {
+          await postFeedActivity(supabase, {
+            projectId,
+            content: `${removedP.orgName} removed from project`,
+            eventType: 'participant_removed',
+          });
+        }
         await loadParticipants();
       }
     });

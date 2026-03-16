@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import ChecklistView from '@/components/checklist/ChecklistView';
 import { isValidUUID } from '@/lib/utils';
+import { postFeedActivity } from '@/lib/feedActivity';
 
 interface ChecklistItem {
   id: string;
@@ -121,18 +122,26 @@ export default function ChecklistPage() {
       .eq('id', itemId);
 
     if (!error) {
+      const item = items.find((i) => i.id === itemId);
       setItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId
+        prev.map((i) =>
+          i.id === itemId
             ? {
-                ...item,
+                ...i,
                 isChecked: checked,
                 checkedBy: checked ? userName : null,
                 checkedAt: checked ? new Date().toISOString() : null,
               }
-            : item
+            : i
         )
       );
+      if (checked && item) {
+        await postFeedActivity(supabase, {
+          projectId,
+          content: `Checklist item completed: ${item.label}`,
+          eventType: 'checklist_item_completed',
+        });
+      }
     }
   };
 
@@ -170,6 +179,11 @@ export default function ChecklistPage() {
           categoryName: newItem.category_name,
         },
       ]);
+      await postFeedActivity(supabase, {
+        projectId,
+        content: `Checklist item added: ${label} (${categoryName})`,
+        eventType: 'checklist_item_added',
+      });
     }
   };
 
