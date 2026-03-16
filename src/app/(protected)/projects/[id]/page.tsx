@@ -362,9 +362,15 @@ export default function ProjectDetailPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted">Status</span>
-                <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_STYLES[project.status]}`}>
+                <button
+                  onClick={() => {
+                    setNewStatus(project.status);
+                    setShowStatusModal(true);
+                  }}
+                  className={`text-xs px-3 py-1 rounded-full font-medium cursor-pointer ${STATUS_STYLES[project.status]}`}
+                >
                   {STATUS_LABELS[project.status]}
-                </span>
+                </button>
               </div>
 
               <hr className="border-border my-3" />
