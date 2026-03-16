@@ -17,7 +17,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: DashboardIcon, roles: ['admin', 'property_owner', 'architect', 'general_contractor', 'trade'] },
   { href: '/projects', label: 'Projects', icon: ProjectsIcon, roles: ['admin', 'property_owner', 'architect', 'general_contractor', 'trade'] },
   { href: '/calendar', label: 'Calendar', icon: CalendarIcon, roles: ['admin', 'property_owner', 'architect', 'general_contractor', 'trade'] },
-  { href: '/organizations', label: 'Organizations', icon: OrganizationsIcon, roles: ['admin'] },
+  { href: '/organizations', label: 'Contacts', icon: OrganizationsIcon, roles: ['admin'] },
   { href: '/materials', label: 'Materials', icon: MaterialsIcon, roles: ['admin'] },
   { href: '/categories', label: 'Categories', icon: CategoriesIcon, roles: ['admin'] },
   { href: '/invoices', label: 'Invoices', icon: InvoicesIcon, roles: ['admin', 'property_owner'] },
