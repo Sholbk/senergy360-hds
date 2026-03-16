@@ -1,14 +1,28 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createFeedPostAction } from '@/app/(protected)/projects/[id]/feed/actions';
 import { uploadFile, generateFilePath, STORAGE_BUCKETS } from '@/lib/supabase/storage';
+import { createClient } from '@/lib/supabase/client';
+
+interface Participant {
+  userId: string;
+  name: string;
+  role: string;
+}
 
 interface FeedComposerProps {
   projectId: string;
   tenantId: string | null;
   onPostCreated: () => void;
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  property_owner: 'Property Owner',
+  architect: 'Architect',
+  general_contractor: 'General Contractor',
+  trade: 'Trade',
+};
 
 export default function FeedComposer({ projectId, tenantId, onPostCreated }: FeedComposerProps) {
   const [content, setContent] = useState('');
@@ -17,6 +31,51 @@ export default function FeedComposer({ projectId, tenantId, onPostCreated }: Fee
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Visibility
+  const [supabase] = useState(() => createClient());
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [visibilityMode, setVisibilityMode] = useState<'all' | 'selected'>('all');
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [showVisibilityPicker, setShowVisibilityPicker] = useState(false);
+
+  useEffect(() => {
+    async function loadParticipants() {
+      const { data } = await supabase
+        .from('project_participants')
+        .select('project_role, organizations(user_id, primary_first_name, primary_last_name)')
+        .eq('project_id', projectId);
+
+      if (data) {
+        const mapped: Participant[] = [];
+        for (const p of data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const org = p.organizations as any;
+          if (org?.user_id) {
+            mapped.push({
+              userId: org.user_id,
+              name: `${org.primary_first_name || ''} ${org.primary_last_name || ''}`.trim() || 'Unknown',
+              role: p.project_role || 'other',
+            });
+          }
+        }
+        setParticipants(mapped);
+      }
+    }
+    loadParticipants();
+  }, [supabase, projectId]);
+
+  const toggleUser = (userId: string) => {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -35,7 +94,6 @@ export default function FeedComposer({ projectId, tenantId, onPostCreated }: Fee
       reader.readAsDataURL(file);
     });
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -65,13 +123,18 @@ export default function FeedComposer({ projectId, tenantId, onPostCreated }: Fee
         uploadedPaths.push(result.path);
       }
 
-      const result = await createFeedPostAction(projectId, content, uploadedPaths);
+      const visibleTo = visibilityMode === 'selected' ? Array.from(selectedUserIds) : [];
+
+      const result = await createFeedPostAction(projectId, content, uploadedPaths, undefined, visibleTo);
       if (result.error) {
         setError(result.error);
       } else {
         setContent('');
         setImages([]);
         setImagePreviews([]);
+        setVisibilityMode('all');
+        setSelectedUserIds(new Set());
+        setShowVisibilityPicker(false);
         onPostCreated();
       }
     } catch {
@@ -109,6 +172,52 @@ export default function FeedComposer({ projectId, tenantId, onPostCreated }: Fee
         </div>
       )}
 
+      {/* Visibility picker */}
+      {showVisibilityPicker && (
+        <div className="mt-3 border border-border rounded-md p-3 bg-background">
+          <div className="flex items-center gap-4 mb-2">
+            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input
+                type="radio"
+                checked={visibilityMode === 'all'}
+                onChange={() => setVisibilityMode('all')}
+                className="accent-primary"
+              />
+              All team members
+            </label>
+            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input
+                type="radio"
+                checked={visibilityMode === 'selected'}
+                onChange={() => setVisibilityMode('selected')}
+                className="accent-primary"
+              />
+              Selected members only
+            </label>
+          </div>
+
+          {visibilityMode === 'selected' && participants.length > 0 && (
+            <div className="space-y-1 mt-2">
+              {participants.map((p) => (
+                <label key={p.userId} className="flex items-center gap-2 text-sm cursor-pointer py-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedUserIds.has(p.userId)}
+                    onChange={() => toggleUser(p.userId)}
+                    className="accent-primary"
+                  />
+                  <span className="text-foreground">{p.name}</span>
+                  <span className="text-xs text-muted">({ROLE_LABELS[p.role] || p.role})</span>
+                </label>
+              ))}
+            </div>
+          )}
+          {visibilityMode === 'selected' && participants.length === 0 && (
+            <p className="text-xs text-muted mt-1">No team members with portal accounts found.</p>
+          )}
+        </div>
+      )}
+
       {error && (
         <p className="text-xs text-red-500 mt-2">{error}</p>
       )}
@@ -135,6 +244,24 @@ export default function FeedComposer({ projectId, tenantId, onPostCreated }: Fee
                 <polyline points="21 15 16 10 5 21" />
               </svg>
               Photo {images.length > 0 ? `(${images.length}/4)` : ''}
+            </span>
+          </button>
+          <button
+            onClick={() => setShowVisibilityPicker(!showVisibilityPicker)}
+            className={`px-3 py-1.5 text-xs border rounded-md transition-colors ${
+              showVisibilityPicker || visibilityMode === 'selected'
+                ? 'border-primary text-primary'
+                : 'border-border text-muted hover:text-foreground hover:border-primary'
+            }`}
+          >
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {visibilityMode === 'all'
+                ? 'Visible to All'
+                : `${selectedUserIds.size} selected`}
             </span>
           </button>
         </div>

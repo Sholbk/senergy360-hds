@@ -10,9 +10,9 @@ interface ProjectTabsProps {
 
 const TABS = [
   { label: 'Overview', path: '' },
+  { label: 'Feed', path: '/feed' },
   { label: 'Team', path: '/team' },
   { label: 'Documents', path: '/documents' },
-  { label: 'Feed', path: '/feed' },
   { label: 'Checklist', path: '/checklist' },
   { label: 'Reports', path: '/reports' },
   { label: 'Invoices', path: '/invoices' },
