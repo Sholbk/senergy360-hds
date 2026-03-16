@@ -73,6 +73,7 @@ export default function ProjectDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
+    status: 'draft',
     description: '',
     buildingPlanSummary: '',
     siteAddressLine1: '',
@@ -216,6 +217,7 @@ export default function ProjectDetailPage() {
     if (!project) return;
     setEditForm({
       name: project.name,
+      status: project.status,
       description: project.description || '',
       buildingPlanSummary: project.buildingPlanSummary || '',
       siteAddressLine1: project.siteAddressLine1,
@@ -232,10 +234,18 @@ export default function ProjectDetailPage() {
   const saveEditProject = async () => {
     if (!project) return;
     setEditSaving(true);
+    const statusUpdates: Record<string, unknown> = {};
+    if (editForm.status !== project.status) {
+      statusUpdates.status = editForm.status;
+      if (editForm.status === 'in_progress') statusUpdates.started_on = new Date().toISOString();
+      if (editForm.status === 'completed') statusUpdates.completed_on = new Date().toISOString();
+    }
+
     const { error } = await supabase
       .from('projects')
       .update({
         name: editForm.name,
+        ...statusUpdates,
         description: editForm.description || null,
         building_plan_summary: editForm.buildingPlanSummary || null,
         site_address_line1: editForm.siteAddressLine1,
@@ -277,15 +287,9 @@ export default function ProjectDetailPage() {
 
       <div className="flex items-center gap-3 mb-4">
         <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
-        <button
-          onClick={() => {
-            setNewStatus(project.status);
-            setShowStatusModal(true);
-          }}
-          className={`text-xs px-3 py-1 rounded-full font-medium cursor-pointer ${STATUS_STYLES[project.status]}`}
-        >
+        <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_STYLES[project.status]}`}>
           {STATUS_LABELS[project.status]}
-        </button>
+        </span>
       </div>
 
       <ProjectTabs projectId={projectId} />
@@ -362,15 +366,9 @@ export default function ProjectDetailPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted">Status</span>
-                <button
-                  onClick={() => {
-                    setNewStatus(project.status);
-                    setShowStatusModal(true);
-                  }}
-                  className={`text-xs px-3 py-1 rounded-full font-medium cursor-pointer ${STATUS_STYLES[project.status]}`}
-                >
+                <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_STYLES[project.status]}`}>
                   {STATUS_LABELS[project.status]}
-                </button>
+                </span>
               </div>
 
               <hr className="border-border my-3" />
@@ -410,35 +408,6 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Status Change Modal */}
-      <Modal isOpen={showStatusModal} onClose={() => setShowStatusModal(false)} title="Update Project Status">
-        <div className="space-y-4">
-          <select
-            value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value)}
-            className={inputClass}
-          >
-            <option value="draft">Draft</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => setShowStatusModal(false)}
-              className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={updateStatus}
-              className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-            >
-              Update
-            </button>
-          </div>
-        </div>
-      </Modal>
-
       {/* Edit Project Modal */}
       <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Project" maxWidth="max-w-2xl">
         <div className="space-y-4">
@@ -463,6 +432,19 @@ export default function ProjectDetailPage() {
               {PROJECT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+            <select
+              value={editForm.status}
+              onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+              className={inputClass}
+            >
+              <option value="draft">Draft</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
             </select>
           </div>
 
