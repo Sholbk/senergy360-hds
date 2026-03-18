@@ -141,6 +141,7 @@ export default function InvoiceDetailPage() {
         invoice={invoice}
         isAdmin={isAdmin}
         onUpdateStatus={handleUpdateStatus}
+        onReload={loadInvoice}
       />
     </div>
   );

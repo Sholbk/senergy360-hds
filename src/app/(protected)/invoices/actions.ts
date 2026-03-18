@@ -142,6 +142,89 @@ export async function updateInvoiceStatusAction(invoiceId: string, status: strin
   return { success: true };
 }
 
+interface UpdateInvoiceInput {
+  invoiceId: string;
+  lineItems: LineItemInput[];
+  dueDate?: string;
+  notes?: string;
+}
+
+export async function updateInvoiceAction(input: UpdateInvoiceInput) {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { error: 'Not authenticated.' };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Only admins can edit invoices.' };
+    }
+
+    // Recalculate totals
+    const subtotalCents = input.lineItems.reduce(
+      (sum, li) => sum + li.quantity * li.unitPriceCents,
+      0
+    );
+    const taxCents = 0;
+    const totalCents = subtotalCents + taxCents;
+
+    // Update invoice
+    const { error: invoiceError } = await supabase
+      .from('invoices')
+      .update({
+        subtotal_cents: subtotalCents,
+        tax_cents: taxCents,
+        total_cents: totalCents,
+        due_date: input.dueDate || null,
+        notes: input.notes?.trim() || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', input.invoiceId);
+
+    if (invoiceError) {
+      console.error('Invoice update error:', invoiceError);
+      return { error: `Failed to update invoice: ${invoiceError.message}` };
+    }
+
+    // Replace line items: delete old, insert new
+    await supabase
+      .from('invoice_line_items')
+      .delete()
+      .eq('invoice_id', input.invoiceId);
+
+    const lineItemRows = input.lineItems.map((li) => ({
+      invoice_id: input.invoiceId,
+      description: li.description.trim(),
+      quantity: li.quantity,
+      unit_price_cents: li.unitPriceCents,
+      total_cents: li.quantity * li.unitPriceCents,
+      line_type: li.lineType,
+    }));
+
+    const { error: lineItemsError } = await supabase
+      .from('invoice_line_items')
+      .insert(lineItemRows);
+
+    if (lineItemsError) {
+      console.error('Line items update error:', lineItemsError);
+      return { error: `Failed to update line items: ${lineItemsError.message}` };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('updateInvoiceAction error:', err);
+    return { error: err instanceof Error ? err.message : 'An unexpected error occurred.' };
+  }
+}
+
 export async function deleteInvoiceAction(invoiceId: string) {
   const supabase = await createClient();
 
