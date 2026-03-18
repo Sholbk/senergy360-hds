@@ -112,26 +112,31 @@ export default function InvoiceForm({
     setSaving(true);
     setError('');
 
-    const result = await createInvoiceAction({
-      clientId: selectedClientId,
-      projectId,
-      lineItems: validItems.map((li) => ({
-        description: li.description,
-        quantity: li.quantity,
-        unitPriceCents: dollarsToCents(parseFloat(li.unitPrice) || 0),
-        lineType: li.lineType,
-      })),
-      dueDate: dueDate || undefined,
-      notes: notes || undefined,
-    });
+    try {
+      const result = await createInvoiceAction({
+        clientId: selectedClientId,
+        projectId,
+        lineItems: validItems.map((li) => ({
+          description: li.description,
+          quantity: li.quantity,
+          unitPriceCents: dollarsToCents(parseFloat(li.unitPrice) || 0),
+          lineType: li.lineType,
+        })),
+        dueDate: dueDate || undefined,
+        notes: notes || undefined,
+      });
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+        setSaving(false);
+        return;
+      }
+
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
       setSaving(false);
-      return;
     }
-
-    onSuccess();
   };
 
   const inputClass =

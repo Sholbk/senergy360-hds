@@ -18,6 +18,7 @@ interface CreateInvoiceInput {
 }
 
 export async function createInvoiceAction(input: CreateInvoiceInput) {
+  try {
   const supabase = await createClient();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -35,7 +36,7 @@ export async function createInvoiceAction(input: CreateInvoiceInput) {
     return { error: 'Profile not found for your account. Please contact support.' };
   }
 
-  if (profile.role !== 'admin' && profile.role !== 'owner') {
+  if (profile.role !== 'admin') {
     return { error: 'Only admins can create invoices.' };
   }
 
@@ -84,7 +85,8 @@ export async function createInvoiceAction(input: CreateInvoiceInput) {
     .single();
 
   if (invoiceError || !invoice) {
-    return { error: 'Failed to create invoice. Please try again.' };
+    console.error('Invoice insert error:', invoiceError);
+    return { error: `Failed to create invoice: ${invoiceError?.message || 'Unknown error'}` };
   }
 
   // Insert line items
@@ -102,12 +104,17 @@ export async function createInvoiceAction(input: CreateInvoiceInput) {
     .insert(lineItemRows);
 
   if (lineItemsError) {
+    console.error('Line items insert error:', lineItemsError);
     // Clean up the invoice if line items fail
     await supabase.from('invoices').delete().eq('id', invoice.id);
-    return { error: 'Failed to create invoice line items. Please try again.' };
+    return { error: `Failed to create invoice line items: ${lineItemsError.message}` };
   }
 
   return { success: true, invoiceId: invoice.id };
+  } catch (err) {
+    console.error('createInvoiceAction error:', err);
+    return { error: err instanceof Error ? err.message : 'An unexpected error occurred.' };
+  }
 }
 
 export async function updateInvoiceStatusAction(invoiceId: string, status: string) {
