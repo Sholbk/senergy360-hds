@@ -14,6 +14,7 @@ const TABS = [
   { label: 'Team', path: '/team' },
   { label: 'Documents', path: '/documents' },
   { label: 'Checklist', path: '/checklist' },
+  { label: 'HDS', path: '/hds' },
   { label: 'Reports', path: '/reports' },
   { label: 'Invoices', path: '/invoices' },
   { label: 'Calendar', path: '/calendar' },
