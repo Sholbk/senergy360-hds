@@ -59,7 +59,7 @@ export default function InvoiceDetailPage() {
     // Fetch invoice
     const { data: inv } = await supabase
       .from('invoices')
-      .select('*, organizations(business_name, primary_first_name, primary_last_name, primary_email, primary_phone), projects(name)')
+      .select('*, clients(primary_first_name, primary_last_name, primary_email, primary_phone), projects(name)')
       .eq('id', invoiceId)
       .single();
 
@@ -71,12 +71,12 @@ export default function InvoiceDetailPage() {
     // Fetch line items
     const { data: lineItemsData } = await supabase
       .from('invoice_line_items')
-      .select('id, description, quantity, unit_price_cents, line_total_cents, line_type')
+      .select('id, description, quantity, unit_price_cents, total_cents, line_type')
       .eq('invoice_id', invoiceId)
       .order('created_at', { ascending: true });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const org = inv.organizations as any;
+    const client = inv.clients as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const project = inv.projects as any;
 
@@ -90,18 +90,18 @@ export default function InvoiceDetailPage() {
       dueDate: inv.due_date,
       createdAt: inv.created_at,
       notes: inv.notes,
-      clientName: org
-        ? org.business_name || `${org.primary_first_name} ${org.primary_last_name}`
+      clientName: client
+        ? `${client.primary_first_name} ${client.primary_last_name}`
         : '',
-      clientEmail: org?.primary_email || null,
-      clientPhone: org?.primary_phone || null,
+      clientEmail: client?.primary_email || null,
+      clientPhone: client?.primary_phone || null,
       projectName: project?.name || null,
       lineItems: (lineItemsData || []).map((li) => ({
         id: li.id,
         description: li.description,
         quantity: li.quantity,
         unitPriceCents: li.unit_price_cents,
-        lineTotalCents: li.line_total_cents,
+        lineTotalCents: li.total_cents,
         lineType: li.line_type,
       })),
     });

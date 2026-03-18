@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
   { href: '/organizations', label: 'Contacts', icon: OrganizationsIcon, roles: ['admin'] },
   { href: '/materials', label: 'Materials', icon: MaterialsIcon, roles: ['admin'] },
   { href: '/categories', label: 'Categories', icon: CategoriesIcon, roles: ['admin'] },
-  { href: '/invoices', label: 'Invoices', icon: InvoicesIcon, roles: ['admin', 'property_owner'] },
+  { href: '/invoices', label: 'Financials', icon: InvoicesIcon, roles: ['admin', 'property_owner'] },
   { href: '/settings/users', label: 'Users', icon: UsersIcon, roles: ['admin'] },
 ];
 

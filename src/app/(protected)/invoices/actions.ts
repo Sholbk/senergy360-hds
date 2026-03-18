@@ -93,7 +93,7 @@ export async function createInvoiceAction(input: CreateInvoiceInput) {
     description: li.description.trim(),
     quantity: li.quantity,
     unit_price_cents: li.unitPriceCents,
-    line_total_cents: li.quantity * li.unitPriceCents,
+    total_cents: li.quantity * li.unitPriceCents,
     line_type: li.lineType,
   }));
 

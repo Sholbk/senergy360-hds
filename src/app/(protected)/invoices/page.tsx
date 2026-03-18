@@ -38,14 +38,14 @@ export default function AllInvoicesPage() {
   const loadInvoices = useCallback(async () => {
     const { data: invoicesData } = await supabase
       .from('invoices')
-      .select('id, invoice_number, status, total_cents, due_date, created_at, organization_id, project_id, organizations(business_name, primary_first_name, primary_last_name), projects(name)')
+      .select('id, invoice_number, status, total_cents, due_date, created_at, client_id, project_id, clients(primary_first_name, primary_last_name), projects(name)')
       .order('created_at', { ascending: false });
 
     if (invoicesData) {
       setInvoices(
         invoicesData.map((inv) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const org = inv.organizations as any;
+          const client = inv.clients as any;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const project = inv.projects as any;
           return {
@@ -55,8 +55,8 @@ export default function AllInvoicesPage() {
             totalCents: inv.total_cents,
             dueDate: inv.due_date,
             createdAt: inv.created_at,
-            clientName: org
-              ? org.business_name || `${org.primary_first_name} ${org.primary_last_name}`
+            clientName: client
+              ? `${client.primary_first_name} ${client.primary_last_name}`
               : '',
             projectName: project?.name || null,
           };
@@ -88,7 +88,7 @@ export default function AllInvoicesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">All Invoices</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Financials</h1>
 
       <div className="flex items-center gap-4 mb-6">
         <div className="flex-1">

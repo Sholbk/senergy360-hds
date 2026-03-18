@@ -47,7 +47,7 @@ async function main() {
   let linksAdded = 0;
 
   for (const [name, dupes] of byName) {
-    if (dupes.length <= 1) continue;
+    if (!dupes || dupes.length <= 1) continue;
 
     // Keep the first one, merge all sub_category links into it
     const keeper = dupes[0];
