@@ -12,6 +12,8 @@ const PUBLIC_ROUTES = [
   '/building-process',
   '/building-envelope',
   '/contact',
+  '/media',
+  '/guides',
 ];
 
 export async function middleware(request: NextRequest) {

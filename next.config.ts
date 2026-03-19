@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'senergy360.com',
+        pathname: '/wp-content/uploads/**',
+      },
+    ],
+  },
   async headers() {
     return [
       {
@@ -19,7 +28,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL || ''} https://api.stripe.com`,
-              `img-src 'self' data: ${process.env.NEXT_PUBLIC_SUPABASE_URL || ''}/storage/v1/object/`,
+              `img-src 'self' data: ${process.env.NEXT_PUBLIC_SUPABASE_URL || ''}/storage/v1/object/ https://senergy360.com`,
               "font-src 'self' https://fonts.gstatic.com",
               "frame-src https://js.stripe.com",
               "frame-ancestors 'none'",

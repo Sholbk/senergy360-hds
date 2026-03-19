@@ -46,7 +46,7 @@ export default function PublicFooter() {
             <h3 className="text-white font-semibold text-sm mb-3">Contact</h3>
             <ul className="space-y-2 text-sm text-sidebar-text/70">
               <li><Link href="/contact" className="hover:text-primary transition-colors">Get in Touch</Link></li>
-              <li><Link href="/guides" className="hover:text-primary transition-colors">Guides</Link></li>
+              <li><a href="https://guides.senergy360.com/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Guides</a></li>
               <li><Link href="/media" className="hover:text-primary transition-colors">Media</Link></li>
               <li><Link href="/login" className="hover:text-primary transition-colors">Client Portal</Link></li>
               <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
