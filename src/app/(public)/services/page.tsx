@@ -3,57 +3,54 @@ import LeadCaptureForm from '@/components/public/LeadCaptureForm';
 
 export const metadata = {
   title: 'Services — SENERGY360 Healthy Home Design & Construction',
-  description: 'Integrated design, consulting, and construction services for healthy homes. From architectural design to construction support and healthy home assessments.',
+  description: 'SENERGY360 provides three core services: Design + Build with FASWALL, Owner\'s Representation + Project Management, and Healthy Home Assessments + Build-Back.',
 };
 
 const SERVICES = [
   {
-    title: 'Healthy Home Architectural Design',
+    num: 1,
+    title: 'Design + Build with FASWALL',
+    subtitle: 'High-performance healthy homes designed from the structure outward',
     description:
-      'Our in-house AIA architect leads every design project with building science and wellness integrated from the earliest concept. This is not cosmetic design — it is architecture informed by how buildings actually perform. Every floor plan, wall section, window placement, and material selection is evaluated for its impact on indoor air quality, moisture management, thermal performance, and long-term durability. The result is architecture that looks exceptional and functions as a healthy living environment.',
-    link: null,
+      'SENERGY360 offers architectural design and construction services for homes built with FASWALL mineral-based insulated concrete form systems. Our team includes a licensed AIA architect within SENERGY360, allowing architecture, building science, and construction strategy to be integrated from the beginning.',
+    href: '/services/design-build',
+    coreSystems: [
+      'Building Science & Performance Enclosure',
+      'Healthy Building Materials & Finish Systems',
+      'Climate Control & Ventilation',
+      'Plumbing Design',
+      'Solar & Alternative Power Systems',
+    ],
   },
   {
-    title: 'FASWALL ICCF Design & Engineering Coordination',
+    num: 2,
+    title: "Owner's Representation + Project Management",
+    subtitle: "Protecting the client's investment and guiding the project team",
     description:
-      'SENERGY360 specializes in designing homes built with FASWALL insulated composite concrete form (ICCF) wall systems. We coordinate the architectural design with the structural engineering requirements specific to FASWALL construction, ensuring that the wall system is properly integrated with the foundation, roof structure, mechanical systems, and building envelope. Our direct experience with FASWALL means we understand both the design requirements and the construction process — something most architects and engineers lack.',
-    link: '/faswall',
+      'Not every client needs SENERGY360 to fully design and build the home. Some already have an architect, contractor, or partial team in place, but want an experienced healthy-building expert to help guide the process. SENERGY360 works on behalf of the client to coordinate the project team, review major decisions, and keep the home aligned with the original goals.',
+    href: '/services/owners-representation',
+    coreSystems: [
+      'Electrical Systems (Low-EMF Design)',
+      'Circadian Lighting Systems',
+      'Low-Voltage & Smart Integration Systems',
+      'Water Quality & Advanced Filtration',
+      'Mold Prevention & Non-Toxic Cleaning',
+    ],
   },
   {
-    title: 'Structural Engineering Integration',
+    num: 3,
+    title: 'Healthy Home Assessments + Build-Back',
+    subtitle: 'Helping homeowners rebuild healthier after damage or environmental concerns',
     description:
-      'Healthy home design requires close coordination between the architect and the structural engineer. SENERGY360 manages this integration, ensuring that structural decisions support building science goals rather than compromising them. This includes coordination of load paths, foundation systems, wall bracing, and connections — all designed to work with the specific wall system and building envelope strategy selected for the project.',
-    link: null,
-  },
-  {
-    title: 'Interior Wellness & Biophilic Design',
-    description:
-      'The interior of a healthy home matters as much as the structure. SENERGY360 integrates biophilic design principles — incorporating natural light, natural materials, views to nature, and spatial design that supports human well-being. Our interior design approach also addresses material safety, selecting finishes, furnishings, and coatings that are low-VOC, non-toxic, and compatible with the home\'s ventilation and air quality systems.',
-    link: null,
-  },
-  {
-    title: 'Healthy Building Expert Consulting',
-    description:
-      'Not every project requires full design services. SENERGY360 offers expert consulting for homeowners, builders, architects, and developers who want to improve the health and performance of their projects. This includes guidance on building envelope design, material selection, ventilation strategies, moisture management, indoor air quality, low-EMF electrical design, water filtration, and circadian lighting. We provide actionable recommendations grounded in building science — not opinions.',
-    link: null,
-  },
-  {
-    title: "Owner's Representative & Project Management",
-    description:
-      "Building a high-performance home involves coordinating architects, engineers, contractors, and specialty trades. Without strong oversight, critical details get missed. SENERGY360 serves as the owner's representative, working directly on behalf of the homeowner to manage the project team, review construction progress, verify that building science details are executed correctly, and protect the homeowner's investment. We are the homeowner's advocate from design through construction.",
-    link: null,
-  },
-  {
-    title: 'Healthy Home Assessments',
-    description:
-      'For existing homes, SENERGY360 provides comprehensive healthy home assessments. We evaluate indoor air quality, moisture risks, ventilation performance, material safety, water quality, electrical systems, and overall building performance. Each assessment results in a detailed report with prioritized recommendations — giving homeowners a clear understanding of what is affecting their home\'s health and what steps will have the greatest impact.',
-    link: null,
-  },
-  {
-    title: 'Healthy Home Construction Support',
-    description:
-      'Even the best designs can fail if they are not properly executed in the field. SENERGY360 provides construction support services, working alongside the general contractor and trades to ensure that healthy-building details are properly implemented. This includes reviewing critical assemblies, verifying air barrier continuity, inspecting moisture management details, and confirming that mechanical, electrical, and plumbing systems are installed according to the design intent.',
-    link: null,
+      'For homeowners dealing with mold, moisture damage, poor indoor air quality, or other environmental issues, SENERGY360 provides assessments and build-back project management. Our goal is not just to repair the damage, but to understand why it happened and how to rebuild in a healthier way.',
+    href: '/services/assessments',
+    coreSystems: [
+      'Indoor air quality and ventilation',
+      'Moisture and mold risk',
+      'Electrical system layout and exposure',
+      'Water filtration and plumbing systems',
+      'Building envelope performance',
+    ],
   },
 ];
 
@@ -65,72 +62,122 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="font-heading text-4xl lg:text-6xl leading-tight mb-6">
-              Integrated Design, Consulting & Construction Services
+              Integrated Healthy Home Design & Construction
             </h1>
             <p className="text-lg text-white/80 leading-relaxed">
-              SENERGY360 offers a comprehensive range of services designed to support the creation of healthy,
-              high-performance homes — from initial concept through construction and beyond. Our integrated
-              approach means every service is connected, ensuring nothing falls through the cracks.
+              SENERGY360 provides three core services that guide clients through every stage of creating
+              a healthier home. Each service is built around the SENERGY360 CORE Systems Framework.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Services Grid */}
+      {/* Intro */}
+      <section className="py-16 bg-primary-bg">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-lg leading-relaxed text-foreground/80">
+            Our services are organized into three core categories that reflect the main ways homeowners
+            work with SENERGY360. Whether a client is planning a new custom home, needs guidance during
+            construction, or is rebuilding after mold or moisture damage, SENERGY360 provides a clear
+            path forward. By connecting our services to the CORE Systems Framework, we ensure that every
+            project is approached as a complete building system rather than a collection of isolated
+            construction components.
+          </p>
+        </div>
+      </section>
+
+      {/* Service Cards */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-4">
-              Our Services
-            </h2>
-            <p className="text-muted max-w-2xl mx-auto">
-              A comprehensive team capable of guiding projects from concept through construction,
-              with every decision informed by building science and healthy-building principles.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
             {SERVICES.map((service) => (
               <div
-                key={service.title}
-                className="bg-card-bg border border-border rounded-lg p-8 hover:border-primary hover:shadow-md transition-all"
+                key={service.num}
+                className="bg-card-bg border border-border rounded-lg p-8 lg:p-10 hover:border-primary transition-colors"
               >
-                <h3 className="font-heading text-xl text-foreground mb-4">
-                  {service.title}
-                </h3>
-                <p className="text-sm text-muted leading-relaxed mb-4">
-                  {service.description}
-                </p>
-                {service.link && (
-                  <Link
-                    href={service.link}
-                    className="text-sm text-primary font-medium hover:text-primary-dark transition-colors"
-                  >
-                    Learn more &rarr;
-                  </Link>
-                )}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                        <span className="text-white font-bold">{service.num}</span>
+                      </div>
+                      <div>
+                        <h2 className="font-heading text-2xl text-foreground">{service.title}</h2>
+                        <p className="text-sm text-muted">{service.subtitle}</p>
+                      </div>
+                    </div>
+                    <p className="text-muted leading-relaxed mb-6">{service.description}</p>
+                    <Link
+                      href={service.href}
+                      className="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-dark transition-colors"
+                    >
+                      Learn More
+                    </Link>
+                  </div>
+                  <div className="bg-primary-bg rounded-lg p-6 border border-border">
+                    <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider">
+                      CORE Systems Focus
+                    </h3>
+                    <div className="space-y-2">
+                      {service.coreSystems.map((system) => (
+                        <div key={system} className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1.5" />
+                          <p className="text-xs text-muted">{system}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Integrated Approach */}
+      {/* How Framework Works Together */}
       <section className="py-20 bg-foreground text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-heading text-3xl lg:text-4xl mb-6">
-            Why an Integrated Approach Matters
+          <h2 className="font-heading text-3xl lg:text-4xl mb-8">
+            How the Framework Works Together
           </h2>
-          <p className="text-white/80 leading-relaxed mb-4">
-            In conventional construction, the architect designs the house, the engineer stamps the plans,
-            and the contractor builds it — often with minimal communication between them. This fragmented
-            approach leads to performance gaps, construction errors, and homes that don&apos;t live up to
-            their potential.
+          <p className="text-white/70 leading-relaxed mb-10">
+            The three SENERGY360 services represent different phases of the healthy home journey:
           </p>
-          <p className="text-white/80 leading-relaxed">
-            SENERGY360 eliminates these gaps by integrating architecture, building science, engineering,
-            and construction expertise into a single coordinated process. Every decision is informed by
-            every discipline — and the result is a home that performs as a complete, healthy system.
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { step: 'Assessment', desc: 'Identifies issues and opportunities' },
+              { step: 'Design + Build', desc: 'Creates and constructs the healthier structure' },
+              { step: "Owner's Representation", desc: 'Protects the project and coordinates the team' },
+            ].map((item, i) => (
+              <div key={item.step} className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">{i + 1}</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">{item.step}</h3>
+                <p className="text-white/60 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-white/60 text-sm mt-10 max-w-2xl mx-auto">
+            Each step is guided by the 12 CORE Systems, ensuring that architecture, materials, air, water,
+            lighting, electrical design, and interior wellness all work together.
+          </p>
+        </div>
+      </section>
+
+      {/* Complete Approach */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-6">
+            A Complete Healthy Home Approach
+          </h2>
+          <p className="text-muted leading-relaxed mb-4">
+            By combining architecture, building science, construction expertise, and project oversight,
+            SENERGY360 offers a level of integration rarely found in residential construction.
+          </p>
+          <p className="text-muted leading-relaxed">
+            Rather than focusing on a single aspect of building, our team guides the entire process &mdash;
+            helping clients create homes that support durability, comfort, and long-term well-being.
           </p>
         </div>
       </section>
@@ -143,7 +190,7 @@ export default function ServicesPage() {
               Let&apos;s Discuss Your Project
             </h2>
             <p className="text-muted">
-              Whether you&apos;re planning a new build, need consulting on an existing project, or want a
+              Whether you&apos;re planning a new build, need guidance on an existing project, or want a
               healthy home assessment, we&apos;re here to help.
             </p>
           </div>

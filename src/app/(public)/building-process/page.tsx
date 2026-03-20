@@ -3,63 +3,45 @@ import LeadCaptureForm from '@/components/public/LeadCaptureForm';
 
 export const metadata = {
   title: 'Building Process — SENERGY360 Integrated Design & Construction',
-  description: 'The SENERGY360 six-phase integrated design and building process — from discovery through final performance verification.',
+  description: 'The SENERGY360 six-phase integrated design and building process — from discovery through final performance.',
 };
 
 const PHASES = [
   {
     num: 1,
     title: 'Discovery & Project Vision',
-    content: [
-      'Every SENERGY360 project begins with a thorough discovery process. We take the time to understand your goals, your family\'s health priorities, your site conditions, your budget parameters, and your vision for how you want to live in your home.',
-      'This phase includes an in-depth consultation where we discuss your priorities for indoor air quality, material preferences, energy goals, water quality concerns, and any specific health sensitivities. We also evaluate the building site for solar orientation, drainage, soil conditions, wind patterns, and any environmental factors that will influence the design.',
-      'The output of this phase is a clear project vision document that establishes the goals, scope, and design direction for the project — ensuring that every team member is aligned from the start.',
-    ],
+    content:
+      'Every project begins with understanding the client\'s goals for health, performance, and long-term living. During this phase, SENERGY360 works with the homeowner to define priorities related to site selection, environmental conditions, lifestyle needs, and wellness objectives. We evaluate factors such as site orientation and solar exposure, surrounding environmental conditions, water drainage and topography, proximity to environmental concerns, and desired wellness features within the home.',
   },
   {
     num: 2,
     title: 'Architectural Design',
-    content: [
-      'With the project vision established, our in-house AIA architect develops the architectural design. This is not a conventional design process — every decision is informed by building science, healthy-building principles, and construction knowledge.',
-      'During this phase, we develop floor plans, elevations, sections, and details that integrate the CORE Systems Framework from the start. Wall assemblies, window placement, daylighting strategies, spatial flow, and material selections are all designed together — not layered on after the fact.',
-      'We also begin coordinating with structural engineering requirements, particularly for projects using FASWALL wall systems. The goal is a design that is beautiful, functional, healthy, and buildable — with no surprises during construction.',
-    ],
+    content:
+      'Once the project vision is established, the architectural design process begins under the guidance of the SENERGY360 architectural team led by a licensed AIA architect. During this stage, the home\'s layout, orientation, and spatial planning are developed in coordination with healthy building principles. The design process considers both aesthetics and performance, ensuring that the home supports natural light, ventilation, and efficient building systems. For homes built with FASWALL mineral-based wall systems, architectural details are designed specifically around the structural and building science characteristics of the assembly.',
   },
   {
     num: 3,
     title: 'Building Science & System Integration',
-    content: [
-      'This is where SENERGY360\'s approach fundamentally differs from conventional architecture. Before engineering and construction documents are finalized, we conduct a comprehensive building science review of the design.',
-      'This includes detailed analysis of the building envelope — moisture management strategies, air barrier continuity, vapor profiles, thermal bridging, and insulation performance. We also coordinate all twelve CORE Systems, ensuring that the HVAC design works with the envelope, the electrical layout supports low-EMF goals, the plumbing integrates with the water filtration strategy, and the lighting design supports circadian health.',
-      'The output is a fully integrated design where every system has been coordinated with every other system — eliminating the performance gaps that plague conventionally designed homes.',
-    ],
+    content:
+      'As the architectural design develops, SENERGY360 integrates the systems that influence the home\'s indoor environment and long-term durability. Using the SENERGY360 CORE Systems Framework, our team evaluates how the major building systems interact, including building envelope performance, ventilation and climate control systems, electrical layout and lighting design, plumbing and water filtration systems, and interior materials and finishes. This stage ensures that each system supports the others rather than working independently.',
   },
   {
     num: 4,
     title: 'Engineering & Technical Coordination',
-    content: [
-      'Once the building science integration is complete, we coordinate with structural engineers, MEP (mechanical, electrical, plumbing) engineers, and specialty consultants to develop the technical documents needed for permitting and construction.',
-      'SENERGY360 manages this coordination directly — ensuring that engineering decisions support the building science and health goals of the project, rather than compromising them. This is particularly important for FASWALL projects, where the structural engineering must be specifically designed for the ICCF wall system.',
-      'We review all engineering documents for compatibility with the architectural design, building science strategy, and CORE Systems Framework before they are finalized.',
-    ],
+    content:
+      'Once the design framework is established, SENERGY360 coordinates with structural engineers and other technical consultants to ensure the building systems are properly engineered and documented. Structural engineering, mechanical design, and technical details are developed in alignment with the architectural plans and building science strategy established earlier in the project. This coordinated approach reduces construction conflicts and improves overall project efficiency.',
   },
   {
     num: 5,
     title: 'Construction & Project Oversight',
-    content: [
-      'During construction, SENERGY360 provides project oversight to ensure that the design intent is properly executed in the field. This includes regular site visits, construction progress reviews, quality assurance inspections, and coordination with the general contractor and trades.',
-      'Our construction experience allows us to identify potential issues before they become problems — and to verify that critical details like air barrier continuity, moisture management, and mechanical system installation are done correctly. We serve as the owner\'s representative, ensuring that the project team delivers what was designed.',
-      'This phase also includes material verification — confirming that specified healthy-building materials are actually being installed, and that no substitutions have been made that could compromise indoor air quality or building performance.',
-    ],
+    content:
+      'During construction, SENERGY360 remains actively involved to ensure that the design intent and healthy building standards are properly implemented in the field. In many projects, SENERGY360 serves as an Owner\'s Representative, helping guide the project team and protect the client\'s investment. Field oversight may include reviewing construction details and installations, coordinating with contractors and trades, monitoring envelope and moisture management details, and ensuring mechanical and electrical systems follow the design strategy.',
   },
   {
     num: 6,
     title: 'Final Performance & Healthy Living',
-    content: [
-      'Before the home is occupied, SENERGY360 conducts a final performance review. This includes verification of all building systems, air quality testing, HVAC balancing and commissioning, and a comprehensive walkthrough to confirm that every detail meets our standards.',
-      'We also provide homeowners with a healthy living guide — including recommendations for maintaining indoor air quality, water filtration schedules, cleaning product guidance, humidity management, and ongoing maintenance of building systems.',
-      'The goal is not just to hand over a finished house — but to ensure that the homeowner understands how to maintain the healthy living environment we have designed and built for them. This is the final step in the SENERGY360 process, and it is what sets our projects apart from conventional construction.',
-    ],
+    content:
+      'Once construction is complete, the home becomes a carefully designed environment that supports healthy daily living. The result is a residence where architecture, materials, ventilation, water systems, lighting, and electrical design all work together to create a comfortable and resilient indoor environment. This integrated process allows SENERGY360 to deliver homes that go far beyond conventional construction — homes designed to support long-term health, durability, and performance.',
   },
 ];
 
@@ -74,8 +56,9 @@ export default function BuildingProcessPage() {
               The SENERGY360 Integrated Design & Building Process
             </h1>
             <p className="text-lg text-white/80 leading-relaxed">
-              A six-phase process that brings together architecture, building science, engineering,
-              and construction into a unified approach to building healthier homes.
+              Designing and building a healthy home requires more than selecting the right materials or
+              installing better mechanical equipment. It requires a coordinated process where architecture,
+              building science, engineering, and construction are aligned from the beginning.
             </p>
           </div>
         </div>
@@ -85,10 +68,11 @@ export default function BuildingProcessPage() {
       <section className="py-16 bg-primary-bg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-lg leading-relaxed text-foreground/80">
-            Building a healthy, high-performance home requires more than good intentions — it requires a
-            disciplined process that coordinates every decision from initial concept through final occupancy.
-            SENERGY360&apos;s six-phase process ensures that nothing falls through the cracks, and that
-            every system is designed, coordinated, and built to work together as a complete healthy living environment.
+            SENERGY360 approaches each project through an integrated design and construction process that
+            allows every system in the home to work together. This process helps prevent common building
+            failures and ensures that the home performs as intended once it is occupied. Rather than
+            addressing issues later during construction, our team focuses on establishing the right
+            foundation during the earliest planning stages.
           </p>
         </div>
       </section>
@@ -102,7 +86,6 @@ export default function BuildingProcessPage() {
                 key={phase.num}
                 className="relative bg-card-bg border border-border rounded-lg p-6 lg:p-8"
               >
-                {/* Phase Number Badge */}
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary flex items-center justify-center">
                     <span className="text-white font-bold text-xl">{phase.num}</span>
@@ -114,14 +97,8 @@ export default function BuildingProcessPage() {
                     </h3>
                   </div>
                 </div>
-
-                {/* Phase Content */}
-                <div className="space-y-4 pl-0 lg:pl-[4.5rem]">
-                  {phase.content.map((paragraph, index) => (
-                    <p key={index} className="text-sm text-muted leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
+                <div className="pl-0 lg:pl-[4.5rem]">
+                  <p className="text-sm text-muted leading-relaxed">{phase.content}</p>
                 </div>
               </div>
             ))}
@@ -136,15 +113,14 @@ export default function BuildingProcessPage() {
             A Different Way to Build Homes
           </h2>
           <p className="text-white/80 leading-relaxed mb-4">
-            The conventional construction process is fragmented — the architect designs, the engineer stamps,
-            and the contractor builds, often with minimal communication between them. SENERGY360&apos;s
-            integrated process eliminates these gaps by coordinating every discipline and every system from
-            the very beginning.
+            SENERGY360 combines architecture, building science expertise, engineering coordination,
+            and construction experience into one cohesive process. By guiding each phase of the project
+            through our CORE Systems Framework, we ensure that every system within the home contributes
+            to a healthier living environment.
           </p>
-          <p className="text-white/80 leading-relaxed">
-            The result is a home that is designed with intention, built with precision, and engineered to
-            protect the health of the people who live in it — for decades to come. This is not just a
-            different process. It is a different standard for residential construction.
+          <p className="text-white/70 leading-relaxed">
+            Our goal is simple: To design and build homes that perform as well as they look &mdash;
+            homes engineered for health, durability, and long-term comfort.
           </p>
         </div>
       </section>

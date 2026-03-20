@@ -14,8 +14,8 @@ export default function PublicFooter() {
               <span className="font-semibold text-white tracking-wide">SENERGY360</span>
             </div>
             <p className="text-sm text-sidebar-text/70 leading-relaxed">
-              Full-service healthy home design, architecture, and construction.
-              Designing and building the healthiest homes in the world.
+              Healthy home design and construction. Integrating architecture, building science,
+              and high-performance construction to build better homes.
             </p>
           </div>
 
@@ -23,10 +23,10 @@ export default function PublicFooter() {
           <div>
             <h3 className="text-white font-semibold text-sm mb-3">Services</h3>
             <ul className="space-y-2 text-sm text-sidebar-text/70">
-              <li><Link href="/services" className="hover:text-primary transition-colors">Architectural Design</Link></li>
-              <li><Link href="/faswall" className="hover:text-primary transition-colors">FASWALL Construction</Link></li>
-              <li><Link href="/services" className="hover:text-primary transition-colors">Building Science Consulting</Link></li>
-              <li><Link href="/services" className="hover:text-primary transition-colors">Healthy Home Assessments</Link></li>
+              <li><Link href="/services/design-build" className="hover:text-primary transition-colors">Design + Build with FASWALL</Link></li>
+              <li><Link href="/services/owners-representation" className="hover:text-primary transition-colors">Owner&apos;s Representation</Link></li>
+              <li><Link href="/services/assessments" className="hover:text-primary transition-colors">Healthy Home Assessments</Link></li>
+              <li><Link href="/services" className="hover:text-primary transition-colors">All Services</Link></li>
             </ul>
           </div>
 
@@ -35,6 +35,7 @@ export default function PublicFooter() {
             <h3 className="text-white font-semibold text-sm mb-3">Learn</h3>
             <ul className="space-y-2 text-sm text-sidebar-text/70">
               <li><Link href="/core-framework" className="hover:text-primary transition-colors">CORE Framework</Link></li>
+              <li><Link href="/faswall" className="hover:text-primary transition-colors">FASWALL Wall Systems</Link></li>
               <li><Link href="/why-healthy-homes" className="hover:text-primary transition-colors">Why Healthy Homes</Link></li>
               <li><Link href="/building-process" className="hover:text-primary transition-colors">Our Process</Link></li>
               <li><Link href="/building-envelope" className="hover:text-primary transition-colors">Building Envelope</Link></li>
@@ -46,10 +47,9 @@ export default function PublicFooter() {
             <h3 className="text-white font-semibold text-sm mb-3">Contact</h3>
             <ul className="space-y-2 text-sm text-sidebar-text/70">
               <li><Link href="/contact" className="hover:text-primary transition-colors">Get in Touch</Link></li>
-              <li><a href="https://guides.senergy360.com/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Guides</a></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="/media" className="hover:text-primary transition-colors">Media</Link></li>
               <li><Link href="/login" className="hover:text-primary transition-colors">Client Portal</Link></li>
-              <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
             </ul>
           </div>
         </div>

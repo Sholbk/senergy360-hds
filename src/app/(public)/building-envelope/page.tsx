@@ -3,34 +3,34 @@ import LeadCaptureForm from '@/components/public/LeadCaptureForm';
 
 export const metadata = {
   title: 'Building Envelope — SENERGY360',
-  description: 'Why the building envelope is the most important system in your home. Learn how SENERGY360 designs high-performance enclosures for healthy, durable homes.',
+  description: 'Why the building envelope is the most important system in a healthy home and how SENERGY360 designs high-performance enclosures.',
 };
 
-const BUILDING_SCIENCE_LAYERS = [
+const CONTROL_LAYERS = [
   {
-    title: 'Bulk Water Management',
+    title: 'Bulk Water from Rain and Roof Drainage',
     description:
-      'The first line of defense is keeping liquid water out of the building assembly. This includes proper roof drainage, wall flashing, window and door integration, and foundation waterproofing. Failures in bulk water management are the leading cause of moisture damage and mold growth in residential construction.',
+      'The first line of defense is keeping liquid water out of the building assembly through proper roof drainage, wall flashing, window and door integration, and foundation waterproofing.',
   },
   {
-    title: 'Air Movement Control',
+    title: 'Air Movement Through Leaks and Penetrations',
     description:
-      'Uncontrolled air movement through the building envelope carries moisture, reduces energy performance, and compromises indoor air quality. SENERGY360 designs continuous air barrier systems that control air leakage at every point in the building enclosure — from the foundation to the roof. Air barrier continuity is one of the most commonly missed details in conventional construction.',
+      'Uncontrolled air movement carries moisture, reduces energy performance, and compromises indoor air quality. Continuous air barrier systems control air leakage at every point in the building enclosure.',
   },
   {
-    title: 'Vapor Transmission',
+    title: 'Vapor Transmission Through Wall Assemblies',
     description:
-      'Moisture in the form of water vapor moves through building materials by diffusion. The direction and rate of vapor movement depend on temperature, humidity, and the permeability of the materials in the wall assembly. SENERGY360 designs wall assemblies with proper vapor profiles — ensuring that moisture can dry out of the assembly rather than being trapped inside. This is a critical distinction from conventional construction, which often uses vapor barriers in the wrong location or creates assemblies that trap moisture.',
+      'Moisture in the form of water vapor moves through building materials by diffusion. Wall assemblies must be designed with proper vapor profiles so moisture can dry out rather than being trapped inside.',
   },
   {
-    title: 'Thermal Control',
+    title: 'Thermal Control Through Insulation and Thermal Mass',
     description:
-      'Insulation is only one part of thermal performance. SENERGY360 addresses thermal bridging, insulation continuity, and the interaction between insulation and air/vapor control layers to create a complete thermal management strategy. We design for real-world thermal performance — not just R-value on paper.',
+      'Insulation is only one part of thermal performance. SENERGY360 also addresses thermal bridging, insulation continuity, and the interaction between insulation and air/vapor control layers.',
   },
   {
-    title: 'Durability & Long-Term Performance',
+    title: 'Durability of Materials Exposed to Environmental Conditions',
     description:
-      'A building envelope that performs well in year one but degrades over time is not a successful design. SENERGY360 selects materials and designs assemblies that maintain their performance characteristics for decades — resisting moisture damage, UV degradation, insect damage, and structural fatigue. Our preference for FASWALL mineral-based wall systems reflects this commitment to long-term durability.',
+      'A building envelope that performs well in year one but degrades over time is not a successful design. SENERGY360 selects materials and assemblies that maintain performance for decades.',
   },
 ];
 
@@ -42,14 +42,30 @@ export default function BuildingEnvelopePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="font-heading text-4xl lg:text-6xl leading-tight mb-6">
-              Why the Building Envelope Is the Most Important System
+              Why the Building Envelope Is the Most Important System in a Healthy Home
             </h1>
             <p className="text-lg text-white/80 leading-relaxed">
               The building envelope is the boundary between the indoor and outdoor environments.
-              It is the single most important system in determining how your home performs — and
-              how healthy it is to live in.
+              It determines how your home manages air, moisture, temperature, and durability over time.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Introduction */}
+      <section className="py-16 bg-primary-bg">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-lg leading-relaxed text-foreground/80 mb-4">
+            In healthy home construction, the building envelope is one of the most critical systems
+            in the entire structure. The envelope includes the walls, roof, windows, insulation, and
+            all the layers that separate the indoor environment from the outside climate.
+          </p>
+          <p className="text-lg leading-relaxed text-foreground/80">
+            This system determines how well a home manages air movement, moisture, temperature, and
+            durability over time. When the building envelope is designed correctly, it protects the
+            home from many of the issues that commonly affect residential buildings, including mold
+            growth, poor indoor air quality, energy loss, and structural deterioration.
+          </p>
         </div>
       </section>
 
@@ -57,23 +73,14 @@ export default function BuildingEnvelopePage() {
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-6">
-            A Building Science Approach
+            A Building Science Approach to the Envelope
           </h2>
-          <p className="text-muted leading-relaxed mb-4">
-            The building envelope includes every component that separates the conditioned interior of the
-            home from the exterior environment — the walls, roof, foundation, windows, doors, and all the
-            connections between them. This system controls moisture, air movement, thermal performance,
-            and durability. When the building envelope is designed correctly, the home stays dry, comfortable,
-            and energy-efficient. When it fails, the consequences can include mold growth, structural damage,
-            poor indoor air quality, and excessive energy costs.
-          </p>
           <p className="text-muted leading-relaxed mb-8">
-            SENERGY360 designs building envelopes using a layered approach grounded in building science
-            principles. We address five critical control layers in every project:
+            Rather than relying on conventional construction practices alone, SENERGY360 applies a
+            building science approach that evaluates how the envelope manages:
           </p>
-
           <div className="space-y-6">
-            {BUILDING_SCIENCE_LAYERS.map((layer) => (
+            {CONTROL_LAYERS.map((layer) => (
               <div
                 key={layer.title}
                 className="bg-card-bg border border-border rounded-lg p-6 hover:border-primary transition-colors"
@@ -83,6 +90,10 @@ export default function BuildingEnvelopePage() {
               </div>
             ))}
           </div>
+          <p className="text-muted leading-relaxed mt-8">
+            When these layers are designed correctly and installed properly, the building envelope
+            becomes a protective shell that helps the home maintain consistent indoor conditions year-round.
+          </p>
         </div>
       </section>
 
@@ -93,22 +104,21 @@ export default function BuildingEnvelopePage() {
             The Relationship Between the Envelope and Indoor Health
           </h2>
           <p className="text-muted leading-relaxed mb-4">
-            The building envelope directly affects indoor air quality, comfort, and health. A leaky envelope
-            allows unfiltered outdoor air, pollutants, allergens, and moisture to enter the home uncontrolled.
-            A poorly insulated envelope creates temperature swings, drafts, and condensation. A wall assembly
-            that traps moisture creates the conditions for mold growth — often hidden inside walls where it
-            is not discovered until significant damage has occurred.
+            A well-designed building enclosure supports several aspects of healthy living.
           </p>
           <p className="text-muted leading-relaxed mb-4">
-            A properly designed building envelope creates a controlled indoor environment where the ventilation
-            system — not random air leakage — determines what air enters the home. This allows for proper
-            filtration, humidity control, and consistent air quality throughout the living space.
+            First, it helps control moisture, which is one of the most important factors in preventing
+            mold growth. Homes that stay dry are far less likely to develop microbial issues inside
+            walls, ceilings, or crawl spaces.
+          </p>
+          <p className="text-muted leading-relaxed mb-4">
+            Second, a properly sealed envelope improves indoor air quality by controlling where air
+            enters and exits the home. This allows ventilation systems to deliver filtered fresh air
+            in a controlled manner rather than relying on uncontrolled air leakage through the structure.
           </p>
           <p className="text-muted leading-relaxed">
-            At SENERGY360, the building envelope and the ventilation system are designed together as an
-            integrated system. The envelope provides the airtight, moisture-managed boundary, and the
-            mechanical ventilation system provides controlled fresh air exchange with filtration. This
-            combination is the foundation of a healthy indoor environment.
+            Third, the envelope helps regulate indoor comfort and energy stability, reducing temperature
+            swings and improving overall building performance.
           </p>
         </div>
       </section>
@@ -122,17 +132,18 @@ export default function BuildingEnvelopePage() {
                 Why Wall Systems Matter
               </h2>
               <p className="text-muted leading-relaxed mb-4">
-                The wall system is the largest component of the building envelope and has the greatest
-                influence on moisture management, thermal performance, fire resistance, durability, and
-                indoor air quality. The choice of wall system affects every other building system — from
-                how the HVAC system is sized to how the interior finishes are applied.
+                Because the wall assembly makes up the largest portion of the building envelope, it
+                plays a major role in determining how the structure performs.
               </p>
               <p className="text-muted leading-relaxed mb-4">
-                SENERGY360 specializes in FASWALL mineral-based wall systems because they provide the best
-                combination of vapor permeability, thermal mass, mold resistance, fire resistance, and
-                structural durability available in residential construction. Our architectural designs are
-                developed specifically for FASWALL construction, ensuring that the wall system and the
-                building envelope work together as a unified assembly.
+                This is one of the reasons SENERGY360 focuses on mineral-based wall systems such as
+                FASWALL. These assemblies provide structural strength, insulation, and vapor permeability
+                that help the building manage moisture more effectively than many conventional systems.
+              </p>
+              <p className="text-muted leading-relaxed mb-6">
+                When combined with proper roof design, flashing details, drainage strategies, and
+                ventilation systems, the wall assembly becomes part of a larger building science
+                strategy that protects the home for decades.
               </p>
               <Link
                 href="/faswall"
@@ -168,20 +179,17 @@ export default function BuildingEnvelopePage() {
       <section className="py-20 bg-foreground text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-heading text-3xl lg:text-4xl mb-6">
-            Integration with the CORE Systems Framework
+            Integrating the Envelope Into the CORE Systems Framework
           </h2>
           <p className="text-white/80 leading-relaxed mb-4">
-            The building envelope is System 2 in the SENERGY360 CORE Systems Framework — but it influences
-            nearly every other system. The envelope determines how the HVAC system is designed. It affects
-            where electrical penetrations occur. It influences plumbing routing and water management. It
-            shapes the lighting strategy by controlling natural daylighting. It even affects interior
-            material selection, since the envelope&apos;s moisture management strategy must be compatible
-            with the finishes applied to it.
+            The building envelope is closely connected with several other systems within the SENERGY360
+            CORE Systems Framework, including architectural design and site orientation, healthy building
+            materials, mold prevention strategies, and climate control and ventilation systems.
           </p>
           <p className="text-white/80 leading-relaxed mb-8">
-            At SENERGY360, we design the building envelope first — and then coordinate every other system
-            around it. This ensures that the envelope performs as intended and that no other system
-            compromises its integrity.
+            By designing these systems together rather than separately, SENERGY360 ensures that the home
+            functions as a complete, coordinated environment rather than a collection of individual
+            construction components.
           </p>
           <Link
             href="/core-framework"
@@ -199,22 +207,14 @@ export default function BuildingEnvelopePage() {
             Building for Long-Term Performance
           </h2>
           <p className="text-muted leading-relaxed mb-4">
-            A building envelope that performs well on day one but degrades over five or ten years is not a
-            successful design. SENERGY360 designs envelopes for multi-generational durability — selecting
-            materials that resist moisture damage, UV degradation, insect damage, and structural fatigue
-            over decades of service.
-          </p>
-          <p className="text-muted leading-relaxed mb-4">
-            Our preference for FASWALL mineral-based wall systems reflects this commitment. Unlike wood
-            framing, which is susceptible to rot, mold, and insect damage, FASWALL walls are made from
-            mineralized wood fibers bonded with Portland cement and filled with reinforced concrete. The
-            result is a wall assembly that is designed to last for generations — maintaining its structural
-            integrity, thermal performance, and moisture management capabilities throughout the life of
-            the building.
+            A home built with a well-designed envelope is better protected from moisture intrusion,
+            structural degradation, and indoor environmental issues.
           </p>
           <p className="text-muted leading-relaxed">
-            When you invest in a SENERGY360 home, you are investing in a building envelope that will
-            protect your health, your comfort, and your investment for the long term.
+            For SENERGY360, the goal is not simply to build a home that performs well during the first
+            few years of occupancy. The goal is to create a structure that maintains health, durability,
+            and comfort for generations. That is why building envelope performance remains one of the
+            most important priorities in every SENERGY360 project.
           </p>
         </div>
       </section>

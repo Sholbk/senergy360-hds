@@ -10,73 +10,69 @@ const KEY_BENEFITS = [
   {
     title: 'Exceptional Durability',
     description:
-      'FASWALL forms are made from mineralized wood fibers bonded with Portland cement, creating a wall system that resists rot, insects, and structural degradation. When filled with reinforced concrete, the result is a monolithic wall assembly that can last for generations.',
+      'FASWALL walls are built around reinforced concrete cores and mineral-based materials that are resistant to rot, pests, and long-term degradation. This creates a structure designed to last for generations.',
   },
   {
     title: 'Mold Resistance',
     description:
-      'Unlike wood-framed walls that can trap moisture and support mold growth, FASWALL\'s mineral-based composition does not provide a food source for mold. Combined with proper building science design, this significantly reduces the risk of mold-related health issues.',
+      'Unlike conventional wood-framed construction, FASWALL walls contain mineral-based materials that are far less susceptible to mold growth, especially when combined with proper building science and moisture management strategies.',
   },
   {
     title: 'Vapor Permeability',
     description:
-      'FASWALL walls are vapor-permeable, meaning they can manage moisture through diffusion rather than trapping it inside wall cavities. This breathability is a key advantage over closed-cell foam and conventional ICF systems, which can trap moisture and create hidden problems.',
+      'One of the unique advantages of FASWALL is that the mineralized wood fiber form allows the wall assembly to breathe and manage moisture more effectively than many conventional concrete wall systems.',
   },
   {
     title: 'Thermal Mass & Energy Performance',
     description:
-      'The concrete core of a FASWALL wall provides significant thermal mass, helping to stabilize indoor temperatures by absorbing and slowly releasing heat. This reduces heating and cooling loads and creates a more comfortable, energy-efficient living environment.',
+      'The concrete core provides thermal mass that helps regulate temperature swings, improving comfort and energy efficiency throughout the home.',
   },
   {
     title: 'Fire Resistance',
     description:
-      'FASWALL walls achieve high fire-resistance ratings. The mineral-based forms and concrete core do not burn, providing a level of passive fire protection that wood-framed homes cannot match.',
+      'The mineral-based wall assembly provides excellent fire resistance compared to traditional wood-framed structures.',
   },
   {
     title: 'Sound Control',
     description:
-      'The mass and density of FASWALL walls provide excellent sound attenuation, reducing exterior noise penetration and improving acoustic privacy between rooms. This is a significant quality-of-life improvement over lightweight wood-framed construction.',
+      'The density of the wall assembly provides strong acoustic performance, reducing outside noise and creating a quieter indoor environment.',
   },
 ];
 
 const COMPARISON = [
   {
     system: 'Conventional Wood Framing',
-    type: 'challenges',
+    type: 'challenges' as const,
+    intro: 'Wood framing has been the dominant residential construction method for decades. While this system can perform adequately when built carefully, it is more sensitive to moisture exposure.',
     points: [
-      'Susceptible to moisture damage, rot, and mold growth',
-      'Limited thermal mass — poor temperature stability',
-      'Requires extensive air sealing and vapor barrier detailing',
-      'Vulnerable to insect damage (termites, carpenter ants)',
-      'Lower fire resistance without added protective systems',
-      'Shorter structural lifespan compared to mineral-based systems',
-      'Sound transmission between rooms and from exterior',
+      'Greater vulnerability to moisture intrusion',
+      'Potential for mold growth when assemblies stay wet',
+      'Lower structural mass and durability',
+      'Shorter lifespan compared to mineral-based structures',
     ],
   },
   {
-    system: 'Traditional ICF (Foam-Based)',
-    type: 'mixed',
+    system: 'Traditional ICF (Insulated Concrete Forms)',
+    type: 'mixed' as const,
+    intro: 'ICF construction improves on wood framing by using foam blocks filled with reinforced concrete. However, most ICF systems rely on expanded polystyrene (EPS) foam, which can limit vapor permeability.',
     points: [
-      'Good thermal performance from continuous insulation',
-      'Strong structural performance with reinforced concrete core',
-      'Closed-cell foam traps moisture — no vapor permeability',
-      'Foam can off-gas VOCs and other chemicals over time',
-      'Insect tunneling risk in foam insulation layer',
-      'Not breathable — relies entirely on mechanical ventilation for moisture control',
-      'Foam is petroleum-based and less sustainable',
+      'Reinforced concrete structural strength',
+      'Improved insulation and energy efficiency',
+      'Better resistance to wind and storms',
+      'Stronger and quieter homes',
     ],
   },
   {
-    system: 'FASWALL ICCF',
-    type: 'advantages',
+    system: 'FASWALL Mineral-Based Wall Systems',
+    type: 'advantages' as const,
+    intro: 'FASWALL uses mineralized wood fiber and cement composite forms filled with reinforced concrete, providing both structural strength and balanced moisture behavior.',
     points: [
-      'Mineral-based — no organic materials that support mold growth',
-      'Vapor-permeable — manages moisture through natural diffusion',
-      'Excellent thermal mass from reinforced concrete core',
-      'No foam — no off-gassing, no insect tunneling in insulation',
-      'Superior fire resistance ratings',
-      'Exceptional sound attenuation',
-      'Designed for multi-generational durability',
+      'Reinforced concrete structural core',
+      'Mineral-based materials with reduced mold risk',
+      'Vapor permeability that helps manage moisture',
+      'Excellent thermal mass and energy stability',
+      'Strong fire resistance and acoustic performance',
+      'Long-term durability with minimal degradation',
     ],
   },
 ];
@@ -98,29 +94,54 @@ export default function FaswallPage() {
         </div>
       </section>
 
-      {/* Why FASWALL */}
+      {/* Introduction */}
       <section className="py-16 bg-primary-bg">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-lg leading-relaxed text-foreground/80 mb-4">
+            At SENERGY360, the wall system is one of the most important decisions in the entire home-building
+            process. The structure of the building determines how well the home will perform in areas such as
+            moisture management, durability, thermal performance, indoor air quality, and long-term resilience.
+          </p>
+          <p className="text-lg leading-relaxed text-foreground/80 mb-4">
+            FASWALL is fundamentally different from conventional wood framing and even many other insulated
+            concrete form systems. The wall assembly is made from a mineralized wood fiber and cement composite
+            form that is filled with reinforced concrete, creating a monolithic structural wall that combines
+            strength, insulation, and vapor permeability.
+          </p>
+          <p className="text-lg leading-relaxed text-foreground/80">
+            This system provides a balanced combination of durability, breathability, and thermal mass that
+            aligns extremely well with the goals of healthy home construction.
+          </p>
+        </div>
+      </section>
+
+      {/* Why SENERGY360 Focuses on FASWALL */}
+      <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-6">
             Why SENERGY360 Focuses on FASWALL
           </h2>
           <p className="text-muted leading-relaxed mb-4">
-            The wall system is one of the most important decisions in the entire home-building process. It
-            determines how well the building manages moisture, resists fire, controls temperature, attenuates
-            sound, and performs over decades of use. Most residential construction relies on wood framing — a
-            system with well-documented limitations in moisture management, durability, and long-term performance.
+            SENERGY360 has extensive experience building with insulated concrete form systems, and our
+            background working with ICF construction has helped us understand the strengths and limitations
+            of different wall assemblies.
+          </p>
+          <p className="text-muted leading-relaxed mb-4">
+            Through years of evaluating building performance, moisture behavior, and long-term durability,
+            we have found that mineral-based wall systems such as FASWALL provide one of the most balanced
+            solutions for healthy home construction.
           </p>
           <p className="text-muted leading-relaxed">
-            SENERGY360 has chosen to specialize in FASWALL insulated composite concrete form (ICCF) construction
-            because it provides the best combination of durability, breathability, thermal performance, and health
-            safety available in residential wall systems today. Our team has direct experience designing for and
-            building with FASWALL — and we understand how to integrate it with every other system in the home.
+            Because wall systems affect nearly every aspect of a building&apos;s performance, our
+            architectural services are specifically designed around this construction method. Designing
+            with FASWALL from the beginning allows the structure, insulation strategy, mechanical systems,
+            and interior environment to work together properly.
           </p>
         </div>
       </section>
 
       {/* Key Benefits */}
-      <section className="py-20">
+      <section className="py-20 bg-primary-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-4">
@@ -143,37 +164,45 @@ export default function FaswallPage() {
       </section>
 
       {/* Architecture Designed Around the Wall System */}
-      <section className="py-20 bg-primary-bg">
+      <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-6">
             Architecture Designed Around the Wall System
           </h2>
           <p className="text-muted leading-relaxed mb-4">
-            Most architects design homes without considering the specific requirements and opportunities of
-            the wall system. At SENERGY360, the wall system is a central part of the architectural design
-            process. Our in-house AIA architect designs specifically for FASWALL construction, ensuring that
-            the architecture takes full advantage of the system&apos;s thermal mass, structural capabilities,
-            and moisture management properties.
+            At SENERGY360, we believe wall systems should not be treated as a simple construction choice.
+            They should be part of the architectural strategy of the home. Because of this, our architectural
+            services are designed specifically to work with FASWALL construction. This ensures that:
           </p>
+          <div className="space-y-3 mb-6">
+            {[
+              'Structural engineering integrates correctly with the wall system',
+              'Mechanical systems work efficiently with the thermal mass of the structure',
+              'Window and roof details properly manage water and vapor movement',
+              "The home's design fully benefits from the performance of the wall assembly",
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
+                <p className="text-sm text-muted">{item}</p>
+              </div>
+            ))}
+          </div>
           <p className="text-muted leading-relaxed">
-            This means window and door openings are designed for proper integration with the FASWALL forms,
-            structural loads are coordinated with the reinforced concrete core, and the building envelope
-            is detailed to work with — not against — the wall system&apos;s vapor-permeable characteristics.
-            The result is a home where the architecture and the structure work together as one system.
+            By designing around the wall system from the beginning, SENERGY360 can create homes that are
+            more durable, healthier, and better performing than conventional construction.
           </p>
         </div>
       </section>
 
       {/* Comparison Section */}
-      <section className="py-20">
+      <section className="py-20 bg-primary-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-4">
               FASWALL vs. Conventional Construction
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              Understanding how different wall systems compare helps explain why SENERGY360 has
-              chosen FASWALL as the foundation for our healthy home designs.
+              Why the wall system matters for the health and performance of your home.
             </p>
           </div>
 
@@ -184,18 +213,17 @@ export default function FaswallPage() {
                 className={`rounded-lg p-6 border ${
                   col.type === 'advantages'
                     ? 'bg-accent/5 border-accent'
-                    : col.type === 'challenges'
-                    ? 'bg-card-bg border-border'
                     : 'bg-card-bg border-border'
                 }`}
               >
                 <h3
-                  className={`font-heading text-lg mb-4 ${
+                  className={`font-heading text-lg mb-3 ${
                     col.type === 'advantages' ? 'text-accent-dark' : 'text-foreground'
                   }`}
                 >
                   {col.system}
                 </h3>
+                <p className="text-xs text-muted leading-relaxed mb-4">{col.intro}</p>
                 <ul className="space-y-3">
                   {col.points.map((point) => (
                     <li key={point} className="flex items-start gap-2 text-sm text-muted">
@@ -218,6 +246,37 @@ export default function FaswallPage() {
         </div>
       </section>
 
+      {/* CORE Framework Alignment */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-3xl lg:text-4xl text-foreground mb-6">
+            A Natural Fit with the CORE Systems Framework
+          </h2>
+          <p className="text-muted leading-relaxed mb-4">
+            FASWALL construction aligns closely with the SENERGY360 CORE Systems Framework, particularly
+            in the areas of:
+          </p>
+          <div className="space-y-3 mb-6">
+            {[
+              'Building science and performance enclosure',
+              'Healthy building materials',
+              'Mold prevention and moisture management',
+              'Long-term durability and resilience',
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-2" />
+                <p className="text-sm text-muted">{item}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-muted leading-relaxed">
+            When combined with the other systems in the SENERGY360 framework &mdash; including advanced
+            ventilation, water purification, lighting design, and electrical planning &mdash; the result
+            is a home designed as a complete healthy living environment.
+          </p>
+        </div>
+      </section>
+
       {/* Built from Experience */}
       <section className="py-20 bg-foreground text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -225,15 +284,13 @@ export default function FaswallPage() {
             Built from Experience
           </h2>
           <p className="text-white/80 leading-relaxed mb-4">
-            SENERGY360&apos;s expertise with FASWALL is not theoretical. Our team has hands-on experience
-            designing for and building with FASWALL systems. We understand the engineering coordination
-            required, the construction sequencing, the integration with mechanical and electrical systems,
-            and the building science details that make FASWALL perform at its best.
+            SENERGY360&apos;s specialization in FASWALL construction comes from years of experience
+            building with insulated concrete forms and studying building science, moisture behavior,
+            and indoor environmental health.
           </p>
           <p className="text-white/80 leading-relaxed">
-            This combination of design knowledge and field experience is what allows us to deliver FASWALL
-            homes that are not just structurally sound — but optimized for health, durability, and long-term
-            performance.
+            Our goal is not simply to build homes differently, but to build them better &mdash; using
+            materials and systems designed to support long-term human health and building performance.
           </p>
         </div>
       </section>
