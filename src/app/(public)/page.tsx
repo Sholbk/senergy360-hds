@@ -194,7 +194,7 @@ export default function HomePage() {
               <Link
                 key={service.title}
                 href={service.href}
-                className="group bg-card-bg border border-border rounded-lg p-8 hover:border-primary hover:shadow-md transition-all"
+                className="group bg-card-bg border-l-4 border-l-primary border border-border rounded-lg p-8 shadow-md hover:shadow-lg hover:border-l-accent transition-all"
               >
                 <h3 className="font-heading text-xl text-foreground mb-3 group-hover:text-primary transition-colors">
                   {service.title}

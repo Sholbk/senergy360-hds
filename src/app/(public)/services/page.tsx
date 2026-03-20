@@ -93,7 +93,7 @@ export default function ServicesPage() {
             {SERVICES.map((service) => (
               <div
                 key={service.num}
-                className="bg-card-bg border border-border rounded-lg p-8 lg:p-10 hover:border-primary transition-colors"
+                className="bg-card-bg border-l-4 border-l-primary border border-border rounded-lg p-8 lg:p-10 shadow-md hover:shadow-lg hover:border-l-accent transition-all"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   <div className="lg:col-span-2">
