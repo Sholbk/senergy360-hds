@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function PublicFooter() {
   return (
@@ -7,10 +8,8 @@ export default function PublicFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-white text-xs font-bold">S</span>
-              </div>
+            <div className="flex items-center gap-3 mb-4">
+              <Image src="/logo.png" alt="SENERGY360" width={40} height={40} className="w-10 h-10" />
               <span className="font-semibold text-white tracking-wide">SENERGY360</span>
             </div>
             <p className="text-sm text-sidebar-text/70 leading-relaxed">
