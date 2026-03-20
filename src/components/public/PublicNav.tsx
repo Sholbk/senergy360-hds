@@ -32,8 +32,9 @@ export default function PublicNav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center gap-3">
             <Image src="/logo.png" alt="SENERGY360 — Healthy Build & Design" width={180} height={180} className="w-20 h-20 object-contain" />
+            <span className="text-foreground font-semibold text-xl tracking-widest" style={{ fontFamily: "'Avenir Next Thai Modern', 'Avenir Next', 'Avenir', var(--font-montserrat), sans-serif" }}>SENERGY360</span>
           </Link>
 
           {/* Desktop Nav */}

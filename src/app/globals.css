@@ -45,7 +45,7 @@
   --color-danger: var(--danger);
   --color-info: var(--info);
   --font-sans: var(--font-montserrat);
-  --font-h1: 'Avenir Next', 'Avenir', var(--font-montserrat);
+  --font-h1: 'Avenir Next Thai Modern', 'Avenir Next', 'Avenir', var(--font-montserrat);
   --font-h2: var(--font-poppins);
   --font-heading: var(--font-poppins);
 }
