@@ -30,11 +30,10 @@ export default function PublicNav() {
   return (
     <header className="bg-white border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="SENERGY360 — Healthy Build & Design" width={56} height={56} className="w-14 h-14" />
-            <span className="text-foreground font-semibold text-lg tracking-wide">SENERGY360</span>
+          <Link href="/" className="flex items-center">
+            <Image src="/logo.png" alt="SENERGY360 — Healthy Build & Design" width={180} height={180} className="w-20 h-20 object-contain" />
           </Link>
 
           {/* Desktop Nav */}
