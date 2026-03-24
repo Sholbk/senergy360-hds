@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 import type { CalendarEvent } from '@/types';
 import EventCard, { EVENT_LABELS, TEAM_MEMBER_COLORS, getTeamMemberColor, formatTime } from './EventCard';
 
@@ -485,11 +486,26 @@ function CriticalPathView({
   currentDate: Date;
   onEventClick: (event: CalendarEvent) => void;
 }) {
+  const [supabase] = useState(() => createClient());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
 
   const handleBarClick = useCallback((event: CalendarEvent) => {
-    setSelectedEvent((prev) => prev?.id === event.id ? null : event);
-  }, []);
+    setSelectedEvent((prev) => {
+      if (prev?.id === event.id) {
+        setAttachmentUrl(null);
+        return null;
+      }
+      // Resolve attachment URL if present
+      if (event.attachmentPath) {
+        const { data } = supabase.storage.from('documents').getPublicUrl(event.attachmentPath);
+        setAttachmentUrl(data?.publicUrl || null);
+      } else {
+        setAttachmentUrl(null);
+      }
+      return event;
+    });
+  }, [supabase]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -734,6 +750,81 @@ function CriticalPathView({
                 <div className="mt-3">
                   <span className="text-muted font-medium text-sm">Description:</span>
                   <p className="text-sm text-foreground mt-1">{selectedEvent.description}</p>
+                </div>
+              )}
+
+              {/* Attachment / Document / Image */}
+              {selectedEvent.attachmentName && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                    </svg>
+                    <span className="text-sm font-medium text-foreground">Attachment</span>
+                    {selectedEvent.attachmentTimestamp && (
+                      <span className="text-xs text-muted ml-auto">
+                        {new Date(selectedEvent.attachmentTimestamp).toLocaleDateString('en-US', {
+                          month: 'short', day: 'numeric', year: 'numeric'
+                        })}
+                        {' '}
+                        {new Date(selectedEvent.attachmentTimestamp).toLocaleTimeString('en-US', {
+                          hour: 'numeric', minute: '2-digit'
+                        })}
+                      </span>
+                    )}
+                  </div>
+                  {attachmentUrl && (() => {
+                    const ext = (selectedEvent.attachmentName || '').split('.').pop()?.toLowerCase();
+                    const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext || '');
+                    const isPdf = ext === 'pdf';
+
+                    return (
+                      <div>
+                        {isImage && (
+                          <a href={attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={attachmentUrl}
+                              alt={selectedEvent.attachmentName || 'Attachment'}
+                              className="max-w-md max-h-64 rounded-lg border border-border object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                            />
+                          </a>
+                        )}
+                        {isPdf && (
+                          <a
+                            href={attachmentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-md text-sm text-primary hover:bg-primary-bg transition-colors"
+                          >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            {selectedEvent.attachmentName}
+                          </a>
+                        )}
+                        {!isImage && !isPdf && (
+                          <a
+                            href={attachmentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-md text-sm text-primary hover:bg-primary-bg transition-colors"
+                          >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                              <polyline points="7 10 12 15 17 10" />
+                              <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            {selectedEvent.attachmentName}
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {!attachmentUrl && (
+                    <p className="text-xs text-muted">{selectedEvent.attachmentName}</p>
+                  )}
                 </div>
               )}
             </div>
