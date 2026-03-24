@@ -439,7 +439,7 @@ export interface Lead {
 
 // -- Calendar Events --
 
-export type CalendarEventType = 'meeting_zoom' | 'meeting_google_meet' | 'meeting_in_person' | 'due_date';
+export type CalendarEventType = 'meeting_zoom' | 'meeting_google_meet' | 'meeting_in_person' | 'due_date' | 'project_update';
 
 export interface CalendarEvent {
   id: string;
@@ -454,9 +454,14 @@ export interface CalendarEvent {
   location?: string;
   createdBy?: string;
   assignedTo?: string;
+  teamMemberId?: string;
+  attachmentPath?: string;
+  attachmentName?: string;
+  attachmentTimestamp?: string;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
   // Joined fields
   projectName?: string;
+  teamMemberName?: string;
 }

@@ -6,6 +6,11 @@ import { createClient } from '@/lib/supabase/client';
 import { postFeedActivity } from '@/lib/feedActivity';
 import type { CalendarEvent, CalendarEventType } from '@/types';
 
+interface TeamMember {
+  participantId: string;
+  name: string;
+}
+
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,6 +29,7 @@ const TYPE_LABELS: Record<string, string> = {
   meeting_google_meet: 'Google Meet Meeting',
   meeting_in_person: 'In-Person Meeting',
   due_date: 'Due Date',
+  project_update: 'Project Update',
 };
 
 export default function EventModal({
@@ -52,11 +58,45 @@ export default function EventModal({
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [teamMemberId, setTeamMemberId] = useState('');
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentDate, setAttachmentDate] = useState('');
+  const [attachmentTime, setAttachmentTime] = useState('');
 
   const isEditing = !!event;
-  const isMeeting = eventType !== 'due_date';
+  const isMeeting = eventType === 'meeting_zoom' || eventType === 'meeting_google_meet' || eventType === 'meeting_in_person';
   const isOnline = eventType === 'meeting_zoom' || eventType === 'meeting_google_meet';
   const isInPerson = eventType === 'meeting_in_person';
+  const isProjectUpdate = eventType === 'project_update';
+
+  // Load team members when project changes
+  const resolvedProjId = projectId || selectedProjectId;
+  useEffect(() => {
+    async function loadTeamMembers() {
+      if (!resolvedProjId) {
+        setTeamMembers([]);
+        return;
+      }
+      const { data } = await supabase
+        .from('project_participants')
+        .select('id, organizations(business_name, primary_first_name, primary_last_name)')
+        .eq('project_id', resolvedProjId);
+
+      if (data) {
+        setTeamMembers(
+          data.map((p: Record<string, unknown>) => {
+            const org = p.organizations as Record<string, unknown> | null;
+            const name = org
+              ? (org.business_name as string) || `${org.primary_first_name || ''} ${org.primary_last_name || ''}`.trim()
+              : 'Unknown';
+            return { participantId: p.id as string, name };
+          })
+        );
+      }
+    }
+    if (isOpen) loadTeamMembers();
+  }, [isOpen, resolvedProjId, supabase]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,6 +117,16 @@ export default function EventModal({
       setLocation(event.location || '');
       setDescription(event.description || '');
       setSelectedProjectId(event.projectId);
+      setTeamMemberId(event.teamMemberId || '');
+      setAttachmentFile(null);
+      if (event.attachmentTimestamp) {
+        const at = new Date(event.attachmentTimestamp);
+        setAttachmentDate(at.toISOString().split('T')[0]);
+        setAttachmentTime(at.toTimeString().slice(0, 5));
+      } else {
+        setAttachmentDate('');
+        setAttachmentTime('');
+      }
     } else {
       setTitle('');
       setEventType('meeting_zoom');
@@ -96,6 +146,10 @@ export default function EventModal({
       setLocation('');
       setDescription('');
       setSelectedProjectId(projectId || '');
+      setTeamMemberId('');
+      setAttachmentFile(null);
+      setAttachmentDate('');
+      setAttachmentTime('');
     }
   }, [isOpen, event, defaultDate, defaultHour, projectId]);
 
@@ -144,7 +198,29 @@ export default function EventModal({
 
     setSaving(true);
 
-    const payload = {
+    // Handle file attachment upload
+    let attachmentPath: string | null = null;
+    let attachmentName: string | null = null;
+    if (attachmentFile) {
+      const ext = attachmentFile.name.split('.').pop();
+      const storagePath = `calendar-attachments/${resolvedProjectId}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, attachmentFile);
+      if (uploadErr) {
+        setError('Failed to upload attachment: ' + uploadErr.message);
+        setSaving(false);
+        return;
+      }
+      attachmentPath = storagePath;
+      attachmentName = attachmentFile.name;
+    }
+
+    const attachmentTimestamp = attachmentDate
+      ? new Date(`${attachmentDate}T${attachmentTime || '00:00'}`).toISOString()
+      : null;
+
+    const payload: Record<string, unknown> = {
       tenant_id: tenantId,
       project_id: resolvedProjectId,
       title: title.trim(),
@@ -154,8 +230,17 @@ export default function EventModal({
       end_time: endDateTime,
       meeting_link: isOnline && meetingLink.trim() ? meetingLink.trim() : null,
       location: (isInPerson || isOnline) && location.trim() ? location.trim() : null,
+      team_member_id: teamMemberId || null,
       updated_at: new Date().toISOString(),
     };
+
+    if (attachmentPath) {
+      payload.attachment_path = attachmentPath;
+      payload.attachment_name = attachmentName;
+    }
+    if (attachmentTimestamp) {
+      payload.attachment_timestamp = attachmentTimestamp;
+    }
 
     let saveError;
 
@@ -270,6 +355,22 @@ export default function EventModal({
             <option value="meeting_google_meet">Google Meet Meeting</option>
             <option value="meeting_in_person">In-Person Meeting</option>
             <option value="due_date">Due Date</option>
+            <option value="project_update">Project Update</option>
+          </select>
+        </div>
+
+        {/* Team Member */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">Team Member</label>
+          <select
+            value={teamMemberId}
+            onChange={(e) => setTeamMemberId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">Select team member...</option>
+            {teamMembers.map((m) => (
+              <option key={m.participantId} value={m.participantId}>{m.name}</option>
+            ))}
           </select>
         </div>
 
@@ -347,6 +448,54 @@ export default function EventModal({
             />
           </div>
         )}
+
+        {/* File/Image Attachment */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Attachment (Document or Image)
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.xls,.xlsx"
+            onChange={(e) => {
+              const f = e.target.files?.[0] || null;
+              setAttachmentFile(f);
+              if (f && !attachmentDate) {
+                const now = new Date();
+                setAttachmentDate(now.toISOString().split('T')[0]);
+                setAttachmentTime(now.toTimeString().slice(0, 5));
+              }
+            }}
+            className={inputClass}
+          />
+          {(attachmentFile || event?.attachmentName) && (
+            <div className="mt-2 grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1">Attachment Date</label>
+                <input
+                  type="date"
+                  value={attachmentDate}
+                  onChange={(e) => setAttachmentDate(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1">Attachment Time</label>
+                <input
+                  type="time"
+                  value={attachmentTime}
+                  onChange={(e) => setAttachmentTime(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              {event?.attachmentName && !attachmentFile && (
+                <p className="col-span-2 text-xs text-muted">
+                  Current: {event.attachmentName}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Description</label>

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
-import EventCard, { EVENT_LABELS, formatTime } from './EventCard';
+import EventCard, { EVENT_LABELS, TEAM_MEMBER_COLORS, getTeamMemberColor, formatTime } from './EventCard';
 
 interface CalendarViewProps {
   events: CalendarEvent[];
@@ -161,6 +161,31 @@ export default function CalendarView({
           </button>
         </div>
       </div>
+
+      {/* Team Member Legend */}
+      {(() => {
+        const memberMap = new Map<string, string>();
+        for (const e of events) {
+          if (e.teamMemberId && e.teamMemberName) {
+            memberMap.set(e.teamMemberId, e.teamMemberName);
+          }
+        }
+        if (memberMap.size === 0) return null;
+        return (
+          <div className="flex items-center gap-3 flex-wrap mb-4 px-1">
+            <span className="text-xs font-medium text-muted">Team:</span>
+            {Array.from(memberMap.entries()).map(([id, name]) => {
+              const colors = getTeamMemberColor(id);
+              return (
+                <div key={id} className="flex items-center gap-1.5">
+                  <span className={`w-3 h-3 rounded-full ${colors.bg} border-2 ${colors.border}`} />
+                  <span className="text-xs text-muted">{name}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Views */}
       {viewMode === 'month' && (
@@ -422,6 +447,9 @@ function ListView({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{event.title}</p>
+                  {event.teamMemberName && (
+                    <p className="text-xs text-muted truncate">{event.teamMemberName}</p>
+                  )}
                   {showProjectName && event.projectName && (
                     <p className="text-xs text-muted truncate">{event.projectName}</p>
                   )}
@@ -445,6 +473,7 @@ const CP_EVENT_COLORS: Record<string, { bg: string; border: string; text: string
   meeting_zoom: { bg: 'bg-blue-100', border: 'border-blue-400', text: 'text-blue-700' },
   meeting_google_meet: { bg: 'bg-sky-100', border: 'border-sky-400', text: 'text-sky-700' },
   meeting_in_person: { bg: 'bg-green-100', border: 'border-green-400', text: 'text-green-700' },
+  project_update: { bg: 'bg-purple-100', border: 'border-purple-400', text: 'text-purple-700' },
 };
 
 function CriticalPathView({

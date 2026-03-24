@@ -43,6 +43,8 @@ export default function DocumentUpload({
   const [description, setDescription] = useState('');
   const [signatureRequired, setSignatureRequired] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [uploadDate, setUploadDate] = useState('');
+  const [uploadTime, setUploadTime] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -56,6 +58,8 @@ export default function DocumentUpload({
     setDescription('');
     setSignatureRequired(false);
     setFile(null);
+    setUploadDate('');
+    setUploadTime('');
     setError('');
   };
 
@@ -83,6 +87,10 @@ export default function DocumentUpload({
       formData.set('signatureRequired', String(signatureRequired));
       if (file) {
         formData.set('file', file);
+      }
+      if (uploadDate) {
+        const timestamp = new Date(`${uploadDate}T${uploadTime || '00:00'}`).toISOString();
+        formData.set('uploadTimestamp', timestamp);
       }
 
       await onUpload(formData);
@@ -153,9 +161,39 @@ export default function DocumentUpload({
           <input
             type="file"
             accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            onChange={(e) => {
+              const f = e.target.files?.[0] || null;
+              setFile(f);
+              if (f && !uploadDate) {
+                const now = new Date();
+                setUploadDate(now.toISOString().split('T')[0]);
+                setUploadTime(now.toTimeString().slice(0, 5));
+              }
+            }}
             className={inputClass}
           />
+          {file && (
+            <div className="mt-2 grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1">Date Stamp</label>
+                <input
+                  type="date"
+                  value={uploadDate}
+                  onChange={(e) => setUploadDate(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1">Time Stamp</label>
+                <input
+                  type="time"
+                  value={uploadTime}
+                  onChange={(e) => setUploadTime(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
