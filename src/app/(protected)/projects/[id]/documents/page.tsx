@@ -12,8 +12,10 @@ import {
   uploadDocumentAction,
   shareDocumentAction,
   signDocumentAction,
+  updateDocumentAction,
   deleteDocumentAction,
 } from './actions';
+import Modal from '@/components/ui/Modal';
 import type { Document } from '@/types';
 
 interface Participant {
@@ -39,6 +41,9 @@ export default function ProjectDocumentsPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [shareDoc, setShareDoc] = useState<Document | null>(null);
   const [signDoc, setSignDoc] = useState<Document | null>(null);
+  const [editDoc, setEditDoc] = useState<Document | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editForm, setEditForm] = useState({ title: '', documentType: '', visibility: '', description: '' });
   const [actionError, setActionError] = useState('');
 
   const loadDocuments = useCallback(async () => {
@@ -239,6 +244,30 @@ export default function ProjectDocumentsPage() {
     await loadDocuments();
   };
 
+  const handleEditOpen = (doc: Document) => {
+    setEditDoc(doc);
+    setEditForm({
+      title: doc.title,
+      documentType: doc.documentType,
+      visibility: doc.visibility,
+      description: doc.description || '',
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!editDoc) return;
+    setEditSaving(true);
+    setActionError('');
+    const result = await updateDocumentAction(editDoc.id, editForm);
+    setEditSaving(false);
+    if (result.error) {
+      setActionError(result.error);
+      return;
+    }
+    setEditDoc(null);
+    await loadDocuments();
+  };
+
   const handleDownload = async (doc: Document) => {
     if (!doc.storagePath) return;
     const { data } = await supabase.storage
@@ -290,6 +319,7 @@ export default function ProjectDocumentsPage() {
           isAdmin={isAdmin}
           onShare={(doc) => setShareDoc(doc)}
           onSign={(doc) => setSignDoc(doc)}
+          onEdit={handleEditOpen}
           onDelete={handleDelete}
           onDownload={handleDownload}
         />
@@ -319,6 +349,82 @@ export default function ProjectDocumentsPage() {
         onSave={handleSign}
         documentTitle={signDoc?.title || ''}
       />
+
+      {/* Edit Document Modal */}
+      <Modal isOpen={!!editDoc} onClose={() => setEditDoc(null)} title="Edit Document" maxWidth="max-w-xl">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Title</label>
+            <input
+              type="text"
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              maxLength={200}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Document Type</label>
+            <select
+              value={editForm.documentType}
+              onChange={(e) => setEditForm({ ...editForm, documentType: e.target.value })}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="proposal_contract">Proposal / Contract</option>
+              <option value="core_principles">Core Principles</option>
+              <option value="core_systems_field_guide">Core Systems Field Guide</option>
+              <option value="contract_recommendations">Contract Recommendations</option>
+              <option value="building_science">Building Science</option>
+              <option value="environmental_testing">Environmental Testing</option>
+              <option value="owners_manual_intro">Owner&apos;s Manual Intro</option>
+              <option value="hds_checklist">HDS Checklist</option>
+              <option value="hds_trade_section">HDS Trade Section</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Visibility</label>
+            <select
+              value={editForm.visibility}
+              onChange={(e) => setEditForm({ ...editForm, visibility: e.target.value })}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="admin_only">Admin Only</option>
+              <option value="client">Client</option>
+              <option value="professional">Professional</option>
+              <option value="all_participants">All Participants</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Description</label>
+            <textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              rows={3}
+              maxLength={2000}
+              className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+            />
+          </div>
+          {editDoc?.fileName && (
+            <p className="text-xs text-muted">File: {editDoc.fileName}</p>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setEditDoc(null)}
+              className="px-4 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleEditSave}
+              disabled={editSaving || !editForm.title.trim()}
+              className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              {editSaving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

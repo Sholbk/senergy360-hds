@@ -28,6 +28,7 @@ interface DocumentListProps {
   isAdmin: boolean;
   onShare: (doc: Document) => void;
   onSign: (doc: Document) => void;
+  onEdit: (doc: Document) => void;
   onDelete: (doc: Document) => void;
   onDownload: (doc: Document) => void;
 }
@@ -37,6 +38,7 @@ export default function DocumentList({
   isAdmin,
   onShare,
   onSign,
+  onEdit,
   onDelete,
   onDownload,
 }: DocumentListProps) {
@@ -168,7 +170,13 @@ export default function DocumentList({
                         Download
                       </button>
                     )}
-                    {/* Admin-only actions */}
+                    {/* Edit & admin actions */}
+                    <button
+                      onClick={() => onEdit(doc)}
+                      className="px-3 py-1 text-xs border border-border text-foreground rounded-md hover:bg-background transition-colors"
+                    >
+                      Edit
+                    </button>
                     {isAdmin && (
                       <>
                         <button

@@ -214,6 +214,27 @@ export async function signDocumentAction(
   return { success: true };
 }
 
+export async function updateDocumentAction(
+  documentId: string,
+  input: { title?: string; documentType?: string; visibility?: string; description?: string }
+) {
+  const supabase = await createClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { error: 'Not authenticated.' };
+
+  const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (input.title !== undefined) payload.title = input.title.trim();
+  if (input.documentType !== undefined) payload.document_type = input.documentType;
+  if (input.visibility !== undefined) payload.visibility = input.visibility;
+  if (input.description !== undefined) payload.description = input.description?.trim() || null;
+
+  const { error } = await supabase.from('documents').update(payload).eq('id', documentId);
+  if (error) return { error: 'Failed to update document: ' + error.message };
+
+  return { success: true };
+}
+
 export async function deleteDocumentAction(documentId: string) {
   const supabase = await createClient();
 
