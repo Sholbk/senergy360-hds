@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 import EventCard, { EVENT_LABELS, TEAM_MEMBER_COLORS, getTeamMemberColor, formatTime } from './EventCard';
@@ -485,6 +485,12 @@ function CriticalPathView({
   currentDate: Date;
   onEventClick: (event: CalendarEvent) => void;
 }) {
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+
+  const handleBarClick = useCallback((event: CalendarEvent) => {
+    setSelectedEvent((prev) => prev?.id === event.id ? null : event);
+  }, []);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -537,6 +543,7 @@ function CriticalPathView({
   const dayHeaders = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
+    <>
     <div className="border border-border rounded-lg overflow-hidden">
       {/* Legend */}
       <div className="bg-background px-4 py-2 border-b border-border flex items-center gap-4 flex-wrap">
@@ -631,9 +638,10 @@ function CriticalPathView({
                       return (
                         <button
                           key={event.id}
-                          onClick={() => onEventClick(event)}
+                          onClick={() => handleBarClick(event)}
                           className={cn(
                             'absolute h-6 rounded-sm border text-xs font-medium px-1.5 truncate flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity',
+                            selectedEvent?.id === event.id && 'ring-2 ring-primary ring-offset-1',
                             colors.bg,
                             colors.border,
                             colors.text
@@ -661,5 +669,96 @@ function CriticalPathView({
         </div>
       </div>
     </div>
+
+      {/* Selected Event Detail Panel */}
+      {selectedEvent && (
+        <div className="mt-4 bg-card-bg rounded-lg border border-border border-l-4 border-l-primary p-5 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full ${
+                  CP_EVENT_COLORS[selectedEvent.eventType]?.bg || 'bg-gray-100'
+                } ${CP_EVENT_COLORS[selectedEvent.eventType]?.text || 'text-gray-700'} border ${
+                  CP_EVENT_COLORS[selectedEvent.eventType]?.border || 'border-gray-300'
+                }`}>
+                  {EVENT_LABELS[selectedEvent.eventType]}
+                </span>
+                {selectedEvent.projectName && (
+                  <span className="text-xs text-muted bg-background px-2 py-1 rounded">
+                    {selectedEvent.projectName}
+                  </span>
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">{selectedEvent.title}</h3>
+
+              <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div>
+                  <span className="text-muted font-medium">Date: </span>
+                  <span className="text-foreground">
+                    {new Date(selectedEvent.startTime).toLocaleDateString('en-US', {
+                      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted font-medium">Time: </span>
+                  <span className="text-foreground">
+                    {selectedEvent.eventType === 'due_date' || selectedEvent.eventType === 'project_update'
+                      ? (selectedEvent.eventType === 'due_date' ? 'Due Date' : formatTime(selectedEvent.startTime))
+                      : `${formatTime(selectedEvent.startTime)}${selectedEvent.endTime ? ` – ${formatTime(selectedEvent.endTime)}` : ''}`}
+                  </span>
+                </div>
+                {selectedEvent.teamMemberName && (
+                  <div>
+                    <span className="text-muted font-medium">Team Member: </span>
+                    <span className="text-foreground">{selectedEvent.teamMemberName}</span>
+                  </div>
+                )}
+                {selectedEvent.location && (
+                  <div>
+                    <span className="text-muted font-medium">Location: </span>
+                    <span className="text-foreground">{selectedEvent.location}</span>
+                  </div>
+                )}
+                {selectedEvent.meetingLink && (
+                  <div>
+                    <span className="text-muted font-medium">Meeting Link: </span>
+                    <a href={selectedEvent.meetingLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      Join Meeting
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {selectedEvent.description && (
+                <div className="mt-3">
+                  <span className="text-muted font-medium text-sm">Description:</span>
+                  <p className="text-sm text-foreground mt-1">{selectedEvent.description}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+              <button
+                onClick={() => { onEventClick(selectedEvent); setSelectedEvent(null); }}
+                className="px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="p-1.5 text-muted hover:text-foreground transition-colors"
+                title="Close"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
