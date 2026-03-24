@@ -133,48 +133,18 @@ export default function ContractsPage() {
 
         {/* Empty State */}
         {contracts.length === 0 && (
-          <div className="bg-card-bg py-16">
-            <div className="flex items-center justify-center gap-12 max-w-3xl mx-auto px-8">
-              {/* Illustration placeholder */}
-              <div className="flex-shrink-0 w-64 h-40 bg-foreground rounded-xl flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-foreground to-foreground/80" />
-                <div className="relative text-center">
-                  <p className="text-white/50 text-[10px] uppercase tracking-wider mb-1">Project Management</p>
-                  <p className="text-white text-sm font-semibold leading-tight">How to Create<br />Contracts</p>
-                  <div className="mt-2 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mx-auto">
-                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                  </div>
-                </div>
-                {/* Side preview */}
-                <div className="absolute right-0 top-2 bottom-2 w-20 bg-white rounded-l-lg shadow-lg opacity-70">
-                  <div className="p-2">
-                    <div className="text-[6px] font-semibold text-foreground mb-1">Contract</div>
-                    <div className="space-y-1">
-                      <div className="h-1 bg-muted/30 rounded" />
-                      <div className="h-1 bg-muted/30 rounded w-3/4" />
-                      <div className="h-1 bg-muted/30 rounded w-1/2" />
-                      <div className="h-1 bg-muted/30 rounded" />
-                      <div className="h-1 bg-muted/30 rounded w-2/3" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="text-center">
-                <div className="w-48 h-48 rounded-full bg-primary-bg/50 flex items-center justify-center mx-auto mb-0 -mt-4">
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground mb-2">Start Your First Contract</h2>
-                    <p className="text-sm text-muted mb-5">Create, share, and sign contracts with your clients.</p>
-                    <button className="px-6 py-2.5 bg-foreground text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">
-                      Create Contract
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="bg-card-bg py-16 text-center">
+            <svg className="w-12 h-12 text-muted mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <h2 className="text-lg font-semibold text-foreground mb-2">No contracts yet</h2>
+            <p className="text-sm text-muted mb-5">Create, share, and sign contracts with your clients.</p>
+            <button className="px-6 py-2.5 bg-foreground text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">
+              Create Contract
+            </button>
           </div>
         )}
 
