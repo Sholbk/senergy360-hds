@@ -268,6 +268,17 @@ export default function ProjectDocumentsPage() {
     await loadDocuments();
   };
 
+  const handleView = async (doc: Document) => {
+    if (!doc.storagePath) return;
+    const { data } = await supabase.storage
+      .from('documents')
+      .createSignedUrl(doc.storagePath, 300);
+
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank');
+    }
+  };
+
   const handleDownload = async (doc: Document) => {
     if (!doc.storagePath) return;
     const { data } = await supabase.storage
@@ -322,6 +333,7 @@ export default function ProjectDocumentsPage() {
           onEdit={handleEditOpen}
           onDelete={handleDelete}
           onDownload={handleDownload}
+          onView={handleView}
         />
       </div>
 

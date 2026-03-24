@@ -31,6 +31,7 @@ interface DocumentListProps {
   onEdit: (doc: Document) => void;
   onDelete: (doc: Document) => void;
   onDownload: (doc: Document) => void;
+  onView: (doc: Document) => void;
 }
 
 export default function DocumentList({
@@ -41,6 +42,7 @@ export default function DocumentList({
   onEdit,
   onDelete,
   onDownload,
+  onView,
 }: DocumentListProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     new Set(Object.keys(DOCUMENT_TYPE_LABELS))
@@ -112,9 +114,12 @@ export default function DocumentList({
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground truncate">
+                      <button
+                        onClick={() => onView(doc)}
+                        className="text-sm font-medium text-foreground truncate hover:text-primary hover:underline transition-colors text-left"
+                      >
                         {doc.title}
-                      </span>
+                      </button>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-border text-muted whitespace-nowrap">
                         {VISIBILITY_LABELS[doc.visibility] || doc.visibility}
                       </span>
