@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { href: '/projects', label: 'Projects', icon: ProjectsIcon, roles: ['admin', 'property_owner', 'architect', 'general_contractor', 'trade'] },
   { href: '/calendar', label: 'Calendar', icon: CalendarIcon, roles: ['admin', 'property_owner', 'architect', 'general_contractor', 'trade'] },
   { href: '/organizations', label: 'Contacts', icon: OrganizationsIcon, roles: ['admin'] },
+  { href: '/leads', label: 'Leads', icon: LeadsIcon, roles: ['admin'] },
   { href: '/materials', label: 'Materials', icon: MaterialsIcon, roles: ['admin'] },
   { href: '/categories', label: 'Categories', icon: CategoriesIcon, roles: ['admin'] },
   { href: '/invoices', label: 'Financials', icon: InvoicesIcon, roles: ['admin', 'property_owner'] },
@@ -142,6 +143,14 @@ function InvoicesIcon({ className }: { className?: string }) {
       <line x1="16" y1="13" x2="8" y2="13" />
       <line x1="16" y1="17" x2="8" y2="17" />
       <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function LeadsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
     </svg>
   );
 }

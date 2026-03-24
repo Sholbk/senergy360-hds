@@ -26,8 +26,35 @@ interface Lead {
   phone: string | null;
   message: string | null;
   sourcePage: string | null;
+  stage: string;
+  projectType: string | null;
+  addressCity: string | null;
+  addressState: string | null;
+  projectId: string | null;
   createdAt: string;
 }
+
+const LEAD_STAGE_BADGE: Record<string, string> = {
+  new: 'bg-amber-100 text-amber-700',
+  followed_up: 'bg-blue-100 text-blue-700',
+  connected: 'bg-purple-100 text-purple-700',
+  meeting_scheduled: 'bg-indigo-100 text-indigo-700',
+  estimate_sent: 'bg-cyan-100 text-cyan-700',
+  won: 'bg-green-100 text-green-700',
+  snoozed: 'bg-gray-100 text-gray-500',
+  archived: 'bg-gray-100 text-gray-400',
+};
+
+const LEAD_STAGE_LABELS: Record<string, string> = {
+  new: 'New',
+  followed_up: 'Followed Up',
+  connected: 'Connected',
+  meeting_scheduled: 'Meeting Scheduled',
+  estimate_sent: 'Estimate Sent',
+  won: 'Won',
+  snoozed: 'Snoozed',
+  archived: 'Archived',
+};
 
 interface PipelineProject {
   id: string;
@@ -99,7 +126,9 @@ export default function FinancialsPage() {
     const [leadsRes, projectsRes, invoicesRes] = await Promise.all([
       supabase
         .from('leads')
-        .select('id, name, email, phone, message, source_page, created_at')
+        .select('id, name, email, phone, message, source_page, stage, project_type, address_city, address_state, project_id, created_at')
+        .is('deleted_at', null)
+        .not('stage', 'in', '("snoozed","archived")')
         .order('created_at', { ascending: false }),
       supabase
         .from('projects')
@@ -119,6 +148,11 @@ export default function FinancialsPage() {
           phone: l.phone,
           message: l.message,
           sourcePage: l.source_page,
+          stage: l.stage || 'new',
+          projectType: l.project_type,
+          addressCity: l.address_city,
+          addressState: l.address_state,
+          projectId: l.project_id,
           createdAt: l.created_at,
         }))
       );
@@ -328,15 +362,29 @@ export default function FinancialsPage() {
                             <p className="text-xs text-muted mt-1.5 line-clamp-2">{lead.message}</p>
                           )}
                           <div className="flex items-center justify-between mt-2">
-                            {lead.sourcePage && (
-                              <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">
-                                {lead.sourcePage}
-                              </span>
-                            )}
-                            <span className="text-[10px] text-muted ml-auto">
+                            <span className={`text-[10px] font-medium rounded px-1.5 py-0.5 ${LEAD_STAGE_BADGE[lead.stage] || 'bg-gray-100 text-gray-600'}`}>
+                              {LEAD_STAGE_LABELS[lead.stage] || lead.stage}
+                            </span>
+                            <span className="text-[10px] text-muted">
                               {new Date(lead.createdAt).toLocaleDateString()}
                             </span>
                           </div>
+                          {lead.stage === 'won' && !lead.projectId && (
+                            <button
+                              onClick={() => router.push('/leads')}
+                              className="mt-2 text-xs text-primary hover:text-primary-dark font-medium"
+                            >
+                              Convert to Project →
+                            </button>
+                          )}
+                          {lead.projectId && (
+                            <button
+                              onClick={() => router.push(`/projects/${lead.projectId}`)}
+                              className="mt-2 text-xs text-primary hover:text-primary-dark font-medium"
+                            >
+                              View Project →
+                            </button>
+                          )}
                         </div>
                       ))
                     ) : (

@@ -425,16 +425,35 @@ export interface ReportPhoto {
   createdAt: string;
 }
 
-// -- Leads (marketing site) --
+// -- Leads --
+
+export type LeadStage = 'new' | 'followed_up' | 'connected' | 'meeting_scheduled' | 'estimate_sent' | 'won' | 'snoozed' | 'archived';
 
 export interface Lead {
   id: string;
+  tenantId?: string;
   name: string;
   email: string;
   phone?: string;
   message?: string;
   sourcePage?: string;
+  stage: LeadStage;
+  leadSource?: string;
+  addressLine1?: string;
+  addressCity?: string;
+  addressState?: string;
+  addressPostalCode?: string;
+  projectType?: string;
+  assignedTo?: string;
+  tags: string[];
+  organizationId?: string;
+  projectId?: string;
+  notes?: string;
   createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  // Joined fields
+  assignedToName?: string;
 }
 
 // -- Calendar Events --

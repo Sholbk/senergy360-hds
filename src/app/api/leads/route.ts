@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         message: message || null,
         source_page: sourcePage || null,
+        lead_source: 'website',
       });
 
     if (error) {
