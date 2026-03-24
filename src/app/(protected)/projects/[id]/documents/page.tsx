@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import DocumentList from '@/components/documents/DocumentList';
 import DocumentUpload from '@/components/documents/DocumentUpload';
 import DocumentShareModal from '@/components/documents/DocumentShareModal';
@@ -264,7 +263,6 @@ export default function ProjectDocumentsPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-2">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <div className="space-y-4">
         {/* Header with upload button */}

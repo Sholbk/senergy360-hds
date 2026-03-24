@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { isValidUUID } from '@/lib/utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useCalendarEvents } from '@/lib/hooks/useCalendarEvents';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventModal from '@/components/calendar/EventModal';
 import type { CalendarEvent } from '@/types';
@@ -75,7 +74,6 @@ export default function ProjectCalendarPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-4">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <CalendarView
         events={events}

@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import InvoiceForm from '@/components/invoices/InvoiceForm';
 import Modal from '@/components/ui/Modal';
 import { isValidUUID } from '@/lib/utils';
@@ -119,7 +118,6 @@ export default function ProjectInvoicesPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-4">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-foreground">Invoices</h2>

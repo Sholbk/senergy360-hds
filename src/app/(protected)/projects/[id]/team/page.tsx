@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import Modal from '@/components/ui/Modal';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import { isValidUUID } from '@/lib/utils';
 import { postFeedActivity } from '@/lib/feedActivity';
 
@@ -744,7 +743,6 @@ export default function ProjectTeamPage() {
         &larr; Back to Projects
       </button>
 
-      <ProjectTabs projectId={projectId} />
 
       {actionError && (
         <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded text-red-700 text-sm">

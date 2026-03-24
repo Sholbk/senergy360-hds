@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import FeedComposer from '@/components/feed/FeedComposer';
 import FeedPost from '@/components/feed/FeedPost';
 import { useRealtimeFeed } from '@/lib/hooks/useRealtimeFeed';
@@ -307,7 +306,6 @@ export default function ProjectFeedPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-4">{projectName || 'Project'} Feed</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <div className="max-w-2xl">
         <FeedComposer

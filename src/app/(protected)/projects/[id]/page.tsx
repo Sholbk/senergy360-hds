@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PrivateNotesList from '@/components/ui/PrivateNotesList';
 import Modal from '@/components/ui/Modal';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import { isValidUUID, VALID_STATUSES, PROJECT_TYPES, STATUS_LABELS, STATUS_STYLES } from '@/lib/utils';
 
 interface ProjectDetail {
@@ -277,7 +276,7 @@ export default function ProjectDetailPage() {
   const inputClass = 'w-full px-3 py-2 border border-border rounded-md text-sm bg-card-bg focus:outline-none focus:ring-2 focus:ring-primary';
 
   return (
-    <div>
+    <>
       <button
         onClick={() => router.push('/projects')}
         className="text-sm text-primary hover:text-primary-dark mb-4 flex items-center gap-1"
@@ -292,15 +291,12 @@ export default function ProjectDetailPage() {
         </span>
       </div>
 
-      <ProjectTabs projectId={projectId} />
-
       <div className="flex gap-6">
-        {/* Left 1/3: Property Owner, Address, Description, Notes */}
-        <div className="w-1/3 space-y-6">
-          {/* Property Owner */}
+      <div className="flex-1 min-w-0 space-y-6">
+          {/* Project Summary */}
           <div className="bg-card-bg rounded-lg border border-border p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">Property Owner</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground">Project Summary</h2>
               <button
                 onClick={openEditModal}
                 className="px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
@@ -308,42 +304,102 @@ export default function ProjectDetailPage() {
                 Edit Project
               </button>
             </div>
-            {owner ? (
-              <>
-                <p className="text-sm font-medium">{owner.name}</p>
-                {owner.email && <p className="text-xs text-muted">{owner.email}</p>}
-                {owner.phone && <p className="text-xs text-muted">{owner.phone}</p>}
-              </>
-            ) : (
-              <p className="text-sm text-muted italic">No property owner assigned.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs text-muted mb-1">Type</p>
+                <p className="text-sm font-medium text-foreground">{projectTypeLabel}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">Status</p>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLES[project.status]}`}>
+                  {STATUS_LABELS[project.status]}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">Team</p>
+                <p className="text-sm font-medium text-foreground">{teamSummary.totalParticipants} member{teamSummary.totalParticipants !== 1 ? 's' : ''}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted mb-1">Location</p>
+                <p className="text-sm font-medium text-foreground">{project.siteCity}, {project.siteState}</p>
+              </div>
+            </div>
+            {project.description && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted whitespace-pre-wrap">{project.description}</p>
+              </div>
             )}
           </div>
 
-          {/* Site Address */}
+          {/* Upcoming Due Dates */}
           <div className="bg-card-bg rounded-lg border border-border p-5">
-            <h2 className="text-sm font-semibold text-foreground mb-2">Site Address</h2>
-            <p className="text-xs text-muted">{project.siteAddressLine1}</p>
-            {project.siteAddressLine2 && <p className="text-xs text-muted">{project.siteAddressLine2}</p>}
-            <p className="text-xs text-muted">
-              {project.siteCity}, {project.siteState} {project.sitePostalCode}
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
+              <Link href={`/projects/${projectId}/calendar`} className="text-xs text-primary hover:text-primary-dark font-medium">
+                View Calendar →
+              </Link>
+            </div>
+            <div className="bg-background rounded-lg p-6 text-center">
+              <svg className="w-8 h-8 text-muted mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <p className="text-sm font-medium text-foreground">Upcoming Due Dates</p>
+              <p className="text-xs text-muted mt-1">See your upcoming due dates appear here</p>
+            </div>
           </div>
 
-          {/* Description */}
-          {project.description && (
-            <div className="bg-card-bg rounded-lg border border-border p-5">
-              <h2 className="text-sm font-semibold text-foreground mb-2">Description</h2>
-              <p className="text-xs text-muted whitespace-pre-wrap">{project.description}</p>
+          {/* Files & Photos preview */}
+          <div className="bg-card-bg rounded-lg border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground">
+                Files & Photos
+              </h2>
+              <Link href={`/projects/${projectId}/documents`} className="text-xs text-primary hover:text-primary-dark font-medium inline-flex items-center gap-1">
+                View All →
+              </Link>
             </div>
-          )}
+            <div className="bg-background rounded-lg p-6 text-center">
+              <svg className="w-8 h-8 text-muted mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <p className="text-sm font-medium text-foreground">Project Documents</p>
+              <p className="text-xs text-muted mt-1">Upload and manage your project files</p>
+              <Link
+                href={`/projects/${projectId}/documents`}
+                className="inline-block mt-3 px-4 py-2 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors font-medium"
+              >
+                Upload Files
+              </Link>
+            </div>
+          </div>
 
-          {/* Building Plan Summary */}
-          {project.buildingPlanSummary && (
-            <div className="bg-card-bg rounded-lg border border-border p-5">
-              <h2 className="text-sm font-semibold text-foreground mb-2">Building Plan Summary</h2>
-              <p className="text-xs text-muted whitespace-pre-wrap">{project.buildingPlanSummary}</p>
+          {/* Tasks & Punchlist preview */}
+          <div className="bg-card-bg rounded-lg border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground">Tasks & Punchlist</h2>
+              <Link href={`/projects/${projectId}/checklist`} className="text-xs text-primary hover:text-primary-dark font-medium inline-flex items-center gap-1">
+                View All →
+              </Link>
             </div>
-          )}
+            <div className="bg-background rounded-lg p-6 text-center">
+              <svg className="w-8 h-8 text-muted mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+              </svg>
+              <p className="text-sm font-medium text-foreground">Project Tasks</p>
+              <p className="text-xs text-muted mt-1">Create and track tasks for your build</p>
+              <Link
+                href={`/projects/${projectId}/checklist`}
+                className="inline-block mt-3 px-4 py-2 text-xs bg-primary text-white rounded-md hover:bg-primary-dark transition-colors font-medium"
+              >
+                Create New Task
+              </Link>
+            </div>
+          </div>
 
           {/* Private Notes */}
           <div className="bg-card-bg rounded-lg border border-border p-5">
@@ -352,58 +408,82 @@ export default function ProjectDetailPage() {
               onAddNote={handleAddNote}
             />
           </div>
-        </div>
 
-        {/* Right 2/3: Project Summary */}
-        <div className="w-2/3 space-y-6">
-          <div className="bg-card-bg rounded-lg border border-border p-5">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Project Summary</h2>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted">Type</span>
-                <span className="text-sm font-medium text-foreground">{projectTypeLabel}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted">Status</span>
-                <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_STYLES[project.status]}`}>
-                  {STATUS_LABELS[project.status]}
-                </span>
-              </div>
-
-              <hr className="border-border my-3" />
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted">Team</span>
-                  <span className="text-sm font-medium text-foreground">
-                    {teamSummary.totalParticipants} participant{teamSummary.totalParticipants !== 1 ? 's' : ''}
-                  </span>
-                </div>
-
-                {teamSummary.roles.length > 0 ? (
-                  <ul className="space-y-1 ml-2">
-                    {teamSummary.roles.map(({ role, count }) => (
-                      <li key={role} className="text-xs text-muted flex items-center gap-2">
-                        <span className="w-1 h-1 bg-muted rounded-full flex-shrink-0" />
-                        {count} {ROLE_LABELS[role] || role}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-muted italic ml-2">No team members assigned yet.</p>
-                )}
-              </div>
-
-              <div className="pt-3">
-                <Link
-                  href={`/projects/${projectId}/team`}
-                  className="text-sm text-primary hover:text-primary-dark font-medium inline-flex items-center gap-1"
-                >
-                  View Team &rarr;
-                </Link>
-              </div>
+      </div>
+        {/* Right sidebar: Project details */}
+        <div className="w-[280px] min-w-[280px] flex-shrink-0 space-y-4">
+          {/* Project Location */}
+          <div className="bg-card-bg rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Project Location</h3>
+              <button onClick={openEditModal} className="text-xs text-primary hover:text-primary-dark font-medium">Edit</button>
             </div>
+            <p className="text-xs text-muted">{project.siteAddressLine1}</p>
+            {project.siteAddressLine2 && <p className="text-xs text-muted">{project.siteAddressLine2}</p>}
+            <p className="text-xs text-muted">{project.siteCity}, {project.siteState} {project.sitePostalCode}</p>
+          </div>
+
+          {/* Client Details */}
+          <div className="bg-card-bg rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Client Details</h3>
+              <button onClick={openEditModal} className="text-xs text-primary hover:text-primary-dark font-medium">Edit</button>
+            </div>
+            {owner ? (
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  {owner.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">{owner.name}</p>
+                  {owner.phone && <p className="text-xs text-muted mt-0.5">{owner.phone}</p>}
+                  {owner.email && <p className="text-xs text-muted">{owner.email}</p>}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted italic">No property owner assigned.</p>
+            )}
+          </div>
+
+          {/* Project Chat (link to feed) */}
+          <div className="bg-card-bg rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-foreground">Project Chat</h3>
+              <Link href={`/projects/${projectId}/feed`} className="text-xs text-primary hover:text-primary-dark font-medium">Open</Link>
+            </div>
+            <p className="text-xs text-muted mb-3">Communicate with your team</p>
+            <Link
+              href={`/projects/${projectId}/feed`}
+              className="block w-full text-center px-3 py-2 text-sm border border-border rounded-md hover:bg-background transition-colors text-muted"
+            >
+              Open Chat →
+            </Link>
+          </div>
+
+          {/* Collaborators */}
+          <div className="bg-card-bg rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Collaborators</h3>
+              <Link href={`/projects/${projectId}/team`} className="text-xs text-primary hover:text-primary-dark font-medium">Manage</Link>
+            </div>
+            {teamSummary.roles.length > 0 ? (
+              <div className="space-y-2">
+                {teamSummary.roles.map(({ role, count }) => (
+                  <div key={role} className="flex items-center justify-between">
+                    <span className="text-xs text-muted">{ROLE_LABELS[role] || role}</span>
+                    <span className="text-xs font-medium text-foreground">{count}</span>
+                  </div>
+                ))}
+                <div className="pt-2 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-foreground">Total</span>
+                    <span className="text-xs font-bold text-foreground">{teamSummary.totalParticipants}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted italic">No team members yet.</p>
+            )}
           </div>
         </div>
       </div>
@@ -555,6 +635,6 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </>
   );
 }

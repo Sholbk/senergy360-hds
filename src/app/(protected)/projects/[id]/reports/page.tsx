@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import Modal from '@/components/ui/Modal';
 import { isValidUUID } from '@/lib/utils';
 import { uploadFile, generateFilePath, STORAGE_BUCKETS } from '@/lib/supabase/storage';
@@ -387,7 +386,6 @@ export default function ProjectReportsPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-2">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm mb-4">

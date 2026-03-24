@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import HdsWorkflowView from '@/components/hds/HdsWorkflowView';
 import { isValidUUID } from '@/lib/utils';
 import { postFeedActivity } from '@/lib/feedActivity';
@@ -356,7 +355,6 @@ export default function HdsPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-4">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <HdsWorkflowView
         principles={principles}

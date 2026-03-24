@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import ManualEntryForm from '@/components/owners-manual/ManualEntryForm';
 import Modal from '@/components/ui/Modal';
 import { isValidUUID } from '@/lib/utils';
@@ -211,7 +210,6 @@ export default function OwnersManualPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-4">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-foreground">Owner&apos;s Manual</h2>

@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 import ChecklistView from '@/components/checklist/ChecklistView';
 import { isValidUUID } from '@/lib/utils';
 import { postFeedActivity } from '@/lib/feedActivity';
@@ -227,7 +226,6 @@ export default function ChecklistPage() {
 
       <h1 className="text-2xl font-bold text-foreground mb-4">{projectName}</h1>
 
-      <ProjectTabs projectId={projectId} />
 
       <ChecklistView
         items={items}
