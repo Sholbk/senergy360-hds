@@ -456,6 +456,66 @@ export interface Lead {
   assignedToName?: string;
 }
 
+// -- Estimates --
+
+export type EstimateStatus = 'draft' | 'sent' | 'approved' | 'declined' | 'expired';
+
+export interface Estimate {
+  id: string;
+  tenantId: string;
+  organizationId?: string;
+  projectId?: string;
+  leadId?: string;
+  estimateNumber: string;
+  status: EstimateStatus;
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+  validUntil?: string;
+  approvedAt?: string;
+  convertedInvoiceId?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Joined
+  clientName?: string;
+  projectName?: string;
+}
+
+export interface EstimateLineItem {
+  id: string;
+  estimateId: string;
+  description: string;
+  quantity: number;
+  unitPriceCents: number;
+  totalCents: number;
+  lineType: string;
+  sortOrder: number;
+}
+
+// -- Change Orders --
+
+export type ChangeOrderStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected';
+
+export interface ChangeOrder {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  changeOrderNumber: string;
+  title: string;
+  description?: string;
+  status: ChangeOrderStatus;
+  costImpactCents: number;
+  requestedBy?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Joined
+  projectName?: string;
+}
+
 // -- Calendar Events --
 
 export type CalendarEventType = 'meeting_zoom' | 'meeting_google_meet' | 'meeting_in_person' | 'due_date' | 'project_update';
