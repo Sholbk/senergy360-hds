@@ -37,8 +37,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-8 bg-card-bg rounded-lg shadow-lg border border-border">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">SENERGY360</h1>
-          <p className="text-muted mt-1">Healthy Design Specifications</p>
+          <h1 className="text-2xl font-bold text-foreground">CORE Framework</h1>
+          <p className="text-muted mt-1">Construction Project Management</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

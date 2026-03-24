@@ -119,7 +119,7 @@ export async function POST(
     // Send email via Resend
     const resend = getResend();
     const { data: emailResult, error: emailError } = await resend.emails.send({
-      from: 'SENERGY360 <noreply@senergy360.com>',
+      from: 'CORE Framework <noreply@coreframework.app>',
       to: recipients,
       subject: `HDS Report: ${project.name}`,
       html,

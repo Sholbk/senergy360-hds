@@ -4,19 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = [
   '/',
-  '/about',
-  '/services',
-  '/services/design-build',
-  '/services/owners-representation',
-  '/services/assessments',
-  '/faswall',
-  '/core-framework',
-  '/why-healthy-homes',
-  '/building-process',
-  '/building-envelope',
   '/contact',
-  '/media',
-  '/guides',
 ];
 
 export async function middleware(request: NextRequest) {

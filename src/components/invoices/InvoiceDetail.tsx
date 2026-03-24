@@ -173,7 +173,7 @@ export default function InvoiceDetail({
               <span className="text-primary font-bold text-lg">S</span>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">Senergy360, LLC.</h2>
+              <h2 className="text-lg font-bold text-foreground">CORE Framework</h2>
               <p className="text-sm text-muted">Brian Johnson &bull; +19516343588</p>
               <p className="text-sm text-muted">Tucson, Arizona, 85739 &bull; License Number: ROC 341823</p>
             </div>

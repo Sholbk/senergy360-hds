@@ -156,7 +156,7 @@ export default function InvoiceForm({
             <span className="text-primary font-bold text-sm">S</span>
           </div>
           <div>
-            <h2 className="text-sm font-bold text-foreground">Senergy360, LLC.</h2>
+            <h2 className="text-sm font-bold text-foreground">CORE Framework</h2>
             <p className="text-xs text-muted">Brian Johnson &bull; +19516343588</p>
             <p className="text-xs text-muted">Tucson, Arizona, 85739</p>
           </div>

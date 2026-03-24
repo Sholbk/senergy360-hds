@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           to: 'trevorsdesignventures@gmail.com',
           subject: `New Lead: ${name}`,
           html: `
-            <h2>New Lead from SENERGY360 Website</h2>
+            <h2>New Lead from CORE Framework Website</h2>
             <p><strong>Name:</strong> ${name}</p>
             <p><strong>Email:</strong> ${email}</p>
             ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}

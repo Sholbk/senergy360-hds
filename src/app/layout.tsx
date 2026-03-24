@@ -15,8 +15,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "SENERGY360 — Healthy Home Design & Construction",
-  description: "Full-service healthy home design, architecture, and construction firm. Integrating building science, engineering, and advanced wall systems to create homes that support human health.",
+  title: "CORE Framework — Construction Project Management, Simplified",
+  description: "All-in-one construction project management platform for builders, architects, and contractors. Manage projects, documents, invoicing, scheduling, and team collaboration in one place.",
   icons: {
     icon: [
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },

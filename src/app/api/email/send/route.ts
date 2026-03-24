@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const toArray = Array.isArray(to) ? to : [to];
 
     const { data, error } = await resend.emails.send({
-      from: 'SENERGY360 <noreply@senergy360.com>',
+      from: 'CORE Framework <noreply@coreframework.app>',
       to: toArray,
       subject,
       html,

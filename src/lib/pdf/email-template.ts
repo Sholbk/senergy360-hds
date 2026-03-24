@@ -29,7 +29,7 @@ export function buildReportEmailHtml(params: {
           <!-- Logo / Brand -->
           <tr>
             <td style="padding:30px 40px 20px;text-align:center;">
-              <h1 style="margin:0;font-size:22px;color:#1a1a1a;font-weight:bold;">SENERGY360</h1>
+              <h1 style="margin:0;font-size:22px;color:#1a1a1a;font-weight:bold;">CORE Framework</h1>
               <p style="margin:4px 0 0;font-size:12px;color:#888;">Healthy Home Advocates</p>
             </td>
           </tr>
@@ -37,7 +37,7 @@ export function buildReportEmailHtml(params: {
           <!-- Main Content -->
           <tr>
             <td style="padding:0 40px 30px;">
-              <h2 style="margin:0 0 16px;font-size:18px;color:#1a1a1a;text-align:center;">Your Healthy Design Specifications Report is Ready</h2>
+              <h2 style="margin:0 0 16px;font-size:18px;color:#1a1a1a;text-align:center;">Your Construction Project Management Report is Ready</h2>
 
               <!-- Project Info -->
               <table role="presentation" width="100%" style="background-color:#f5f5f0;border-radius:6px;padding:16px;margin-bottom:20px;">
@@ -92,8 +92,8 @@ export function buildReportEmailHtml(params: {
           <!-- Footer -->
           <tr>
             <td style="background-color:#f5f5f0;padding:20px 40px;text-align:center;">
-              <p style="margin:0;font-size:11px;color:#888;">SENERGY360 — Healthy Design Specifications</p>
-              <p style="margin:4px 0 0;font-size:10px;color:#aaa;">info@senergy360.com</p>
+              <p style="margin:0;font-size:11px;color:#888;">CORE Framework — Construction Project Management</p>
+              <p style="margin:4px 0 0;font-size:10px;color:#aaa;">info@coreframework.app</p>
             </td>
           </tr>
 

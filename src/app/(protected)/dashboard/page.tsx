@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted text-sm">Welcome to SENERGY360 Core Framework Contractor Guide</p>
+          <p className="text-muted text-sm">Welcome to CORE Framework</p>
         </div>
         <Link
           href="/projects"
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
         <div>
           <h2 className="text-lg font-semibold text-foreground">Ready to create a new project report?</h2>
           <p className="text-sm text-muted mt-1">
-            Select materials from our healthy building database and generate contractor-ready specifications.
+            Browse your specifications database and generate contractor-ready project reports.
           </p>
         </div>
         <Link

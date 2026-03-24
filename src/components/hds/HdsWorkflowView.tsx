@@ -107,7 +107,7 @@ export default function HdsWorkflowView({
           <h3 className="text-lg font-semibold text-foreground mb-2">Initialize HDS Specifications</h3>
           <p className="text-sm text-muted mb-6">
             Set up the 12 Core Principles checklist for this project. This will create verification items
-            for each building system based on the SENERGY360 Healthy Design Specifications framework.
+            for each building system based on the CORE Framework project management platform.
           </p>
           <button
             onClick={onInitialize}

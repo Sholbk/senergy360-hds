@@ -198,7 +198,7 @@ export async function assembleReportData(projectId: string): Promise<ReportData>
     siteAddress,
     reportDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
     preparedFor,
-    preparedBy: 'SENERGY360',
+    preparedBy: 'CORE Framework',
     checklistSections,
     totalItems,
     checkedItems,
