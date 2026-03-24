@@ -33,7 +33,7 @@ export function useCalendarEvents({
 
     let query = supabase
       .from('calendar_events')
-      .select('*, projects!inner(name), project_participants(organizations(business_name, primary_first_name, primary_last_name))')
+      .select('*, projects!inner(name), project_participants(organizations(business_name, primary_first_name, primary_last_name)), calendar_event_attachments(id, storage_path, file_name, mime_type, uploaded_at)')
       .eq('tenant_id', tenantId)
       .is('deleted_at', null)
       .gte('start_time', startDate)
@@ -76,6 +76,16 @@ export function useCalendarEvents({
             if (!org) return undefined;
             return (org.business_name as string) || `${org.primary_first_name || ''} ${org.primary_last_name || ''}`.trim() || undefined;
           })(),
+          attachments: Array.isArray(row.calendar_event_attachments)
+            ? (row.calendar_event_attachments as Record<string, unknown>[]).map((a) => ({
+                id: a.id as string,
+                eventId: row.id as string,
+                storagePath: a.storage_path as string,
+                fileName: a.file_name as string,
+                mimeType: (a.mime_type as string) || undefined,
+                uploadedAt: a.uploaded_at as string,
+              }))
+            : [],
         }))
       );
     }

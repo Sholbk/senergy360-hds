@@ -543,4 +543,14 @@ export interface CalendarEvent {
   // Joined fields
   projectName?: string;
   teamMemberName?: string;
+  attachments?: CalendarEventAttachment[];
+}
+
+export interface CalendarEventAttachment {
+  id: string;
+  eventId: string;
+  storagePath: string;
+  fileName: string;
+  mimeType?: string;
+  uploadedAt: string;
 }

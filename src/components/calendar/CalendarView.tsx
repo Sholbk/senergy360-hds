@@ -488,24 +488,10 @@ function CriticalPathView({
 }) {
   const [supabase] = useState(() => createClient());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
 
   const handleBarClick = useCallback((event: CalendarEvent) => {
-    setSelectedEvent((prev) => {
-      if (prev?.id === event.id) {
-        setAttachmentUrl(null);
-        return null;
-      }
-      // Resolve attachment URL if present
-      if (event.attachmentPath) {
-        const { data } = supabase.storage.from('documents').getPublicUrl(event.attachmentPath);
-        setAttachmentUrl(data?.publicUrl || null);
-      } else {
-        setAttachmentUrl(null);
-      }
-      return event;
-    });
-  }, [supabase]);
+    setSelectedEvent((prev) => prev?.id === event.id ? null : event);
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -753,80 +739,11 @@ function CriticalPathView({
                 </div>
               )}
 
-              {/* Attachment / Document / Image */}
-              {selectedEvent.attachmentName && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
-                    </svg>
-                    <span className="text-sm font-medium text-foreground">Attachment</span>
-                    {selectedEvent.attachmentTimestamp && (
-                      <span className="text-xs text-muted ml-auto">
-                        {new Date(selectedEvent.attachmentTimestamp).toLocaleDateString('en-US', {
-                          month: 'short', day: 'numeric', year: 'numeric'
-                        })}
-                        {' '}
-                        {new Date(selectedEvent.attachmentTimestamp).toLocaleTimeString('en-US', {
-                          hour: 'numeric', minute: '2-digit'
-                        })}
-                      </span>
-                    )}
-                  </div>
-                  {attachmentUrl && (() => {
-                    const ext = (selectedEvent.attachmentName || '').split('.').pop()?.toLowerCase();
-                    const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext || '');
-                    const isPdf = ext === 'pdf';
-
-                    return (
-                      <div>
-                        {isImage && (
-                          <a href={attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={attachmentUrl}
-                              alt={selectedEvent.attachmentName || 'Attachment'}
-                              className="max-w-md max-h-64 rounded-lg border border-border object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                            />
-                          </a>
-                        )}
-                        {isPdf && (
-                          <a
-                            href={attachmentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-md text-sm text-primary hover:bg-primary-bg transition-colors"
-                          >
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                              <polyline points="14 2 14 8 20 8" />
-                            </svg>
-                            {selectedEvent.attachmentName}
-                          </a>
-                        )}
-                        {!isImage && !isPdf && (
-                          <a
-                            href={attachmentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-md text-sm text-primary hover:bg-primary-bg transition-colors"
-                          >
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                              <polyline points="7 10 12 15 17 10" />
-                              <line x1="12" y1="15" x2="12" y2="3" />
-                            </svg>
-                            {selectedEvent.attachmentName}
-                          </a>
-                        )}
-                      </div>
-                    );
-                  })()}
-                  {!attachmentUrl && (
-                    <p className="text-xs text-muted">{selectedEvent.attachmentName}</p>
-                  )}
-                </div>
-              )}
+              {/* Attachments Section */}
+              <EventAttachmentsPanel event={selectedEvent} supabase={supabase} onUploaded={() => {
+                // Trigger a re-fetch by re-selecting
+                setSelectedEvent(null);
+              }} />
             </div>
 
             <div className="flex items-center gap-2 ml-4 flex-shrink-0">
@@ -851,5 +768,166 @@ function CriticalPathView({
         </div>
       )}
     </>
+  );
+}
+
+/* ---- Event Attachments Panel ---- */
+
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { CalendarEventAttachment } from '@/types';
+
+function EventAttachmentsPanel({
+  event,
+  supabase,
+  onUploaded,
+}: {
+  event: CalendarEvent;
+  supabase: SupabaseClient;
+  onUploaded: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [urls, setUrls] = useState<Record<string, string>>({});
+
+  // Combine legacy single attachment + new multi attachments
+  const allAttachments: { id: string; fileName: string; storagePath: string; uploadedAt: string; mimeType?: string }[] = [];
+
+  if (event.attachmentPath && event.attachmentName) {
+    allAttachments.push({
+      id: 'legacy',
+      fileName: event.attachmentName,
+      storagePath: event.attachmentPath,
+      uploadedAt: event.attachmentTimestamp || event.createdAt,
+      mimeType: undefined,
+    });
+  }
+
+  if (event.attachments) {
+    for (const a of event.attachments) {
+      allAttachments.push({
+        id: a.id,
+        fileName: a.fileName,
+        storagePath: a.storagePath,
+        uploadedAt: a.uploadedAt,
+        mimeType: a.mimeType,
+      });
+    }
+  }
+
+  // Resolve URLs
+  useMemo(() => {
+    const newUrls: Record<string, string> = {};
+    for (const a of allAttachments) {
+      const { data } = supabase.storage.from('documents').getPublicUrl(a.storagePath);
+      if (data?.publicUrl) newUrls[a.id] = data.publicUrl;
+    }
+    setUrls(newUrls);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event.id, event.attachments?.length]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+
+    for (const file of Array.from(files)) {
+      const ext = file.name.split('.').pop();
+      const path = `calendar-attachments/${event.projectId}/${event.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage.from('documents').upload(path, file);
+      if (uploadErr) {
+        console.error('Upload error:', uploadErr);
+        continue;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('calendar_event_attachments').insert({
+        event_id: event.id,
+        storage_path: path,
+        file_name: file.name,
+        mime_type: file.type || null,
+        uploaded_by: user?.id || null,
+      });
+    }
+
+    setUploading(false);
+    e.target.value = '';
+    onUploaded();
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+          </svg>
+          <span className="text-sm font-medium text-foreground">
+            Attachments {allAttachments.length > 0 && `(${allAttachments.length})`}
+          </span>
+        </div>
+        <label className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer transition-colors ${
+          uploading ? 'bg-gray-100 text-gray-400' : 'bg-primary text-white hover:bg-primary-dark'
+        }`}>
+          {uploading ? 'Uploading...' : '+ Add Files'}
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.xls,.xlsx"
+            onChange={handleUpload}
+            disabled={uploading}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      {allAttachments.length === 0 && !uploading && (
+        <p className="text-xs text-muted italic">No attachments yet. Click &quot;+ Add Files&quot; to upload documents or images.</p>
+      )}
+
+      {allAttachments.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {allAttachments.map((a) => {
+            const url = urls[a.id];
+            const ext = a.fileName.split('.').pop()?.toLowerCase();
+            const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext || '');
+
+            return (
+              <div key={a.id} className="border border-border rounded-lg overflow-hidden bg-background">
+                {isImage && url ? (
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={a.fileName}
+                      className="w-full h-32 object-cover hover:opacity-90 transition-opacity"
+                    />
+                  </a>
+                ) : (
+                  <a
+                    href={url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center h-32 hover:bg-primary-bg/30 transition-colors"
+                  >
+                    <svg className="w-8 h-8 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </a>
+                )}
+                <div className="px-3 py-2">
+                  <p className="text-xs font-medium text-foreground truncate">{a.fileName}</p>
+                  <p className="text-[10px] text-muted">
+                    {new Date(a.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    {' '}
+                    {new Date(a.uploadedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
