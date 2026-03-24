@@ -13,7 +13,7 @@ interface CalendarViewProps {
   showProjectName?: boolean;
 }
 
-type ViewMode = 'month' | 'week' | 'list';
+type ViewMode = 'month' | 'week' | 'list' | 'critical-path';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM - 9 PM
@@ -115,9 +115,7 @@ export default function CalendarView({
             </svg>
           </button>
           <h2 className="text-lg font-semibold text-foreground min-w-[200px] text-center">
-            {viewMode === 'month'
-              ? formatMonthYear(currentDate)
-              : viewMode === 'week'
+            {viewMode === 'week'
               ? formatWeekRange(getWeekDates(currentDate))
               : formatMonthYear(currentDate)}
           </h2>
@@ -140,18 +138,18 @@ export default function CalendarView({
 
         <div className="flex items-center gap-2">
           <div className="flex border border-border rounded-md overflow-hidden">
-            {(['month', 'week', 'list'] as ViewMode[]).map((mode) => (
+            {(['month', 'week', 'list', 'critical-path'] as ViewMode[]).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 className={cn(
-                  'px-3 py-1.5 text-sm capitalize transition-colors',
+                  'px-3 py-1.5 text-sm transition-colors whitespace-nowrap',
                   viewMode === mode
                     ? 'bg-primary text-white'
                     : 'bg-card-bg text-muted hover:text-foreground'
                 )}
               >
-                {mode}
+                {mode === 'critical-path' ? 'Critical Path' : mode.charAt(0).toUpperCase() + mode.slice(1)}
               </button>
             ))}
           </div>
@@ -190,6 +188,13 @@ export default function CalendarView({
           events={events}
           onEventClick={onEventClick}
           showProjectName={showProjectName}
+        />
+      )}
+      {viewMode === 'critical-path' && (
+        <CriticalPathView
+          events={events}
+          currentDate={currentDate}
+          onEventClick={onEventClick}
         />
       )}
     </div>
@@ -429,6 +434,203 @@ function ListView({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ---- Critical Path View ---- */
+
+const CP_EVENT_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  due_date: { bg: 'bg-orange-100', border: 'border-orange-400', text: 'text-orange-700' },
+  meeting_zoom: { bg: 'bg-blue-100', border: 'border-blue-400', text: 'text-blue-700' },
+  meeting_google_meet: { bg: 'bg-sky-100', border: 'border-sky-400', text: 'text-sky-700' },
+  meeting_in_person: { bg: 'bg-green-100', border: 'border-green-400', text: 'text-green-700' },
+};
+
+function CriticalPathView({
+  events,
+  currentDate,
+  onEventClick,
+}: {
+  events: CalendarEvent[];
+  currentDate: Date;
+  onEventClick: (event: CalendarEvent) => void;
+}) {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayDate = new Date();
+  const todayDay = isSameDay(todayDate, new Date(year, month, todayDate.getDate()))
+    ? todayDate.getDate()
+    : null;
+
+  // Group events by project
+  const projectMap: Record<string, { projectName: string; events: CalendarEvent[] }> = {};
+  const noProject: CalendarEvent[] = [];
+
+  for (const event of events) {
+    if (event.projectId && event.projectName) {
+      if (!projectMap[event.projectId]) {
+        projectMap[event.projectId] = { projectName: event.projectName, events: [] };
+      }
+      projectMap[event.projectId].events.push(event);
+    } else if (event.projectId) {
+      const key = event.projectId;
+      if (!projectMap[key]) {
+        projectMap[key] = { projectName: 'Unnamed Project', events: [] };
+      }
+      projectMap[key].events.push(event);
+    } else {
+      noProject.push(event);
+    }
+  }
+
+  // Sort projects by earliest event
+  const sortedProjects = Object.entries(projectMap).sort(([, a], [, b]) => {
+    const aMin = Math.min(...a.events.map((e) => new Date(e.startTime).getTime()));
+    const bMin = Math.min(...b.events.map((e) => new Date(e.startTime).getTime()));
+    return aMin - bMin;
+  });
+
+  if (noProject.length > 0) {
+    sortedProjects.push(['unassigned', { projectName: 'Unassigned', events: noProject }]);
+  }
+
+  if (sortedProjects.length === 0) {
+    return (
+      <div className="bg-card-bg rounded-lg border border-border p-8 text-center">
+        <p className="text-muted text-sm">No events to display on the critical path.</p>
+      </div>
+    );
+  }
+
+  // Day column headers
+  const dayHeaders = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  return (
+    <div className="border border-border rounded-lg overflow-hidden">
+      {/* Legend */}
+      <div className="bg-background px-4 py-2 border-b border-border flex items-center gap-4 flex-wrap">
+        <span className="text-xs font-medium text-muted">Legend:</span>
+        {Object.entries(EVENT_LABELS).map(([type, label]) => {
+          const colors = CP_EVENT_COLORS[type] || CP_EVENT_COLORS.due_date;
+          return (
+            <div key={type} className="flex items-center gap-1.5">
+              <span className={`w-3 h-3 rounded-sm ${colors.bg} border ${colors.border}`} />
+              <span className="text-xs text-muted">{label}</span>
+            </div>
+          );
+        })}
+        <div className="flex items-center gap-1.5 ml-auto">
+          <span className="w-3 h-3 rounded-sm bg-red-200 border border-red-400" />
+          <span className="text-xs text-muted">Today</span>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: `${Math.max(daysInMonth * 36 + 200, 900)}px` }}>
+          {/* Day header row */}
+          <div className="flex border-b border-border bg-background sticky top-0 z-10">
+            <div className="w-[200px] min-w-[200px] px-3 py-2 text-xs font-medium text-muted border-r border-border">
+              Project
+            </div>
+            <div className="flex-1 flex">
+              {dayHeaders.map((day) => {
+                const isToday = todayDay === day;
+                const isWeekend = new Date(year, month, day).getDay() % 6 === 0;
+                return (
+                  <div
+                    key={day}
+                    className={cn(
+                      'flex-1 min-w-[36px] text-center py-2 text-xs border-r border-border last:border-r-0',
+                      isToday ? 'bg-red-50 font-bold text-red-600' : isWeekend ? 'bg-background/70 text-muted/50' : 'text-muted'
+                    )}
+                  >
+                    {day}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Project rows */}
+          {sortedProjects.map(([projectId, { projectName, events: projEvents }]) => (
+            <div key={projectId} className="flex border-b border-border last:border-b-0 hover:bg-primary-bg/20 transition-colors">
+              {/* Project name */}
+              <div className="w-[200px] min-w-[200px] px-3 py-3 border-r border-border">
+                <p className="text-sm font-medium text-foreground truncate">{projectName}</p>
+                <p className="text-xs text-muted">{projEvents.length} event{projEvents.length !== 1 ? 's' : ''}</p>
+              </div>
+
+              {/* Timeline cells */}
+              <div className="flex-1 relative" style={{ minHeight: '48px' }}>
+                {/* Grid lines */}
+                <div className="absolute inset-0 flex pointer-events-none">
+                  {dayHeaders.map((day) => {
+                    const isToday = todayDay === day;
+                    return (
+                      <div
+                        key={day}
+                        className={cn(
+                          'flex-1 min-w-[36px] border-r border-border last:border-r-0',
+                          isToday && 'bg-red-50/50'
+                        )}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Event bars */}
+                <div className="relative z-[1] py-1 px-0.5 space-y-0.5">
+                  {projEvents
+                    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                    .map((event) => {
+                      const startDate = new Date(event.startTime);
+                      const startDay = startDate.getDate();
+                      const endDate = event.endTime ? new Date(event.endTime) : startDate;
+                      const endDay = endDate.getMonth() === month ? endDate.getDate() : daysInMonth;
+                      const isDueDate = event.eventType === 'due_date';
+
+                      // Calculate position as percentage
+                      const leftPct = ((startDay - 1) / daysInMonth) * 100;
+                      const widthPct = isDueDate
+                        ? Math.max((1 / daysInMonth) * 100, 2.5) // Due dates get a small fixed width
+                        : Math.max(((endDay - startDay + 1) / daysInMonth) * 100, 2.5);
+
+                      const colors = CP_EVENT_COLORS[event.eventType] || CP_EVENT_COLORS.due_date;
+
+                      return (
+                        <button
+                          key={event.id}
+                          onClick={() => onEventClick(event)}
+                          className={cn(
+                            'absolute h-6 rounded-sm border text-xs font-medium px-1.5 truncate flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity',
+                            colors.bg,
+                            colors.border,
+                            colors.text
+                          )}
+                          style={{
+                            left: `${leftPct}%`,
+                            width: `${widthPct}%`,
+                            top: `${4 + projEvents.indexOf(event) * 28}px`,
+                          }}
+                          title={`${event.title} — ${EVENT_LABELS[event.eventType]} — ${startDate.toLocaleDateString()}`}
+                        >
+                          {isDueDate && (
+                            <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                          )}
+                          <span className="truncate">{event.title}</span>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
