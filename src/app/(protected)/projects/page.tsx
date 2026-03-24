@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PROJECT_TYPES, STATUS_LABELS } from '@/lib/utils';
 import { createProjectAction } from './actions';
 import SearchBox from '@/components/ui/SearchBox';
 import Modal from '@/components/ui/Modal';
 import Link from 'next/link';
+
+type SortField = 'ownerName' | 'createdOn' | 'location' | 'status' | 'projectType' | 'code' | 'tags';
+type SortDirection = 'asc' | 'desc';
 
 interface ProjectRow {
   id: string;
@@ -153,6 +156,18 @@ export default function ProjectsPage() {
     loadPropertyOwners();
   }, [supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [sortField, setSortField] = useState<SortField>('createdOn');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   const filteredProjects = search.trim()
     ? projects.filter((p) => {
         const term = search.toLowerCase();
@@ -167,11 +182,41 @@ export default function ProjectsPage() {
       })
     : projects;
 
-  const grouped = {
-    draft: filteredProjects.filter((p) => p.status === 'draft'),
-    in_progress: filteredProjects.filter((p) => p.status === 'in_progress'),
-    completed: filteredProjects.filter((p) => p.status === 'completed'),
-  };
+  const sortedProjects = useMemo(() => {
+    const sorted = [...filteredProjects];
+    sorted.sort((a, b) => {
+      let aVal = '';
+      let bVal = '';
+      switch (sortField) {
+        case 'ownerName':
+          aVal = (a.ownerName || '').toLowerCase();
+          bVal = (b.ownerName || '').toLowerCase();
+          break;
+        case 'createdOn':
+          aVal = a.createdOn || '';
+          bVal = b.createdOn || '';
+          break;
+        case 'location':
+          aVal = [a.siteCity, a.siteState].filter(Boolean).join(', ').toLowerCase();
+          bVal = [b.siteCity, b.siteState].filter(Boolean).join(', ').toLowerCase();
+          break;
+        case 'status':
+          aVal = a.status;
+          bVal = b.status;
+          break;
+        case 'projectType':
+          aVal = a.projectType;
+          bVal = b.projectType;
+          break;
+        default:
+          return 0;
+      }
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [filteredProjects, sortField, sortDirection]);
 
   const handleSave = async () => {
     setFormError('');
@@ -258,62 +303,105 @@ export default function ProjectsPage() {
 
       {loading ? (
         <p className="text-muted text-sm">Loading projects...</p>
+      ) : sortedProjects.length === 0 ? (
+        <p className="text-sm text-muted italic">No projects found.</p>
       ) : (
-        <div className="space-y-8">
-          {(['draft', 'in_progress', 'completed'] as const).map((status) => (
-            <div key={status}>
-              <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                {STATUS_LABELS[status]}
-                <span className="text-sm text-muted font-normal">({grouped[status].length})</span>
-              </h2>
-              {grouped[status].length === 0 ? (
-                <p className="text-sm text-muted italic pl-4">No {STATUS_LABELS[status].toLowerCase()} projects.</p>
-              ) : (
-                <div className="space-y-2">
-                  {grouped[status].map((project) => (
-                    <div
-                      key={project.id}
-                      className={`bg-card-bg rounded-lg border border-border border-l-4 ${statusColors[status]} p-4 hover:bg-primary-bg transition-colors flex items-center justify-between`}
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-card-bg">
+                {([
+                  { field: 'ownerName' as SortField, label: 'Client Name' },
+                  { field: 'createdOn' as SortField, label: 'Created' },
+                  { field: 'location' as SortField, label: 'Location' },
+                  { field: 'status' as SortField, label: 'Status' },
+                  { field: 'projectType' as SortField, label: 'Type' },
+                  { field: 'code' as SortField, label: '#Code' },
+                  { field: 'tags' as SortField, label: 'Tags' },
+                ]).map(({ field, label }) => (
+                  <th
+                    key={field}
+                    onClick={() => handleSort(field)}
+                    className="px-4 py-3 text-left font-medium text-muted cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {label}
+                      <svg
+                        className={`w-3.5 h-3.5 ${sortField === field ? 'text-foreground' : 'text-muted/40'}`}
+                        viewBox="0 0 14 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M7 0L13 7H1L7 0Z"
+                          opacity={sortField === field && sortDirection === 'asc' ? 1 : 0.3}
+                        />
+                        <path
+                          d="M7 20L1 13H13L7 20Z"
+                          opacity={sortField === field && sortDirection === 'desc' ? 1 : 0.3}
+                        />
+                      </svg>
+                    </span>
+                  </th>
+                ))}
+                <th className="px-4 py-3 w-10"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedProjects.map((project) => (
+                <tr
+                  key={project.id}
+                  className="border-b border-border last:border-b-0 hover:bg-primary-bg transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    <Link href={`/projects/${project.id}`} className="hover:underline">
+                      <p className="font-medium text-foreground">{project.ownerName || '—'}</p>
+                      <p className="text-xs text-muted">{project.name}</p>
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-muted whitespace-nowrap">
+                    {project.createdOn
+                      ? new Date(project.createdOn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    {[project.siteCity, project.siteState].filter(Boolean).join(', ') || '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
+                      project.status === 'completed'
+                        ? 'bg-blue-100 text-blue-700'
+                        : project.status === 'in_progress'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {STATUS_LABELS[project.status as keyof typeof STATUS_LABELS] || project.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    {PROJECT_TYPES.find((t) => t.value === project.projectType)?.label || project.projectType}
+                  </td>
+                  <td className="px-4 py-3 text-muted">—</td>
+                  <td className="px-4 py-3 text-muted">—</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => {
+                        setDeleteProjectName(project.name);
+                        setShowDeleteModal(project.id);
+                      }}
+                      className="p-1.5 text-muted hover:text-red-500 transition-colors"
+                      title="Delete project"
                     >
-                      <Link
-                        href={`/projects/${project.id}`}
-                        className="flex-1"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-foreground">{project.name}</p>
-                            <p className="text-sm text-muted">
-                              {project.ownerName}{' '}
-                              {[project.siteCity, project.siteState].filter(Boolean).join(', ') &&
-                                `\u00B7 ${[project.siteCity, project.siteState].filter(Boolean).join(', ')}`}
-                            </p>
-                          </div>
-                          <span className="text-xs text-muted">
-                            {PROJECT_TYPES.find((t) => t.value === project.projectType)?.label || project.projectType}
-                          </span>
-                        </div>
-                      </Link>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDeleteProjectName(project.name);
-                          setShowDeleteModal(project.id);
-                        }}
-                        className="ml-3 p-2 text-muted hover:text-red-500 transition-colors"
-                        title="Delete project"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                          <polyline points="3,6 5,6 21,6" />
-                          <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                        <polyline points="3,6 5,6 21,6" />
+                        <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
