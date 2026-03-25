@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import type { CalendarEvent } from '@/types';
@@ -740,10 +740,7 @@ function CriticalPathView({
               )}
 
               {/* Attachments Section */}
-              <EventAttachmentsPanel event={selectedEvent} supabase={supabase} onUploaded={() => {
-                // Trigger a re-fetch by re-selecting
-                setSelectedEvent(null);
-              }} />
+              <EventAttachmentsPanel event={selectedEvent} supabase={supabase} />
             </div>
 
             <div className="flex items-center gap-2 ml-4 flex-shrink-0">
@@ -774,60 +771,71 @@ function CriticalPathView({
 /* ---- Event Attachments Panel ---- */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CalendarEventAttachment } from '@/types';
+
+interface AttachmentItem {
+  id: string;
+  fileName: string;
+  storagePath: string;
+  uploadedAt: string;
+}
 
 function EventAttachmentsPanel({
   event,
   supabase,
-  onUploaded,
 }: {
   event: CalendarEvent;
   supabase: SupabaseClient;
-  onUploaded: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
-  const [urls, setUrls] = useState<Record<string, string>>({});
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+  const [loadKey, setLoadKey] = useState(0);
 
-  // Combine legacy single attachment + new multi attachments
-  const allAttachments: { id: string; fileName: string; storagePath: string; uploadedAt: string; mimeType?: string }[] = [];
+  // Fetch attachments from DB whenever event changes or after upload
+  useEffect(() => {
+    const items: AttachmentItem[] = [];
 
-  if (event.attachmentPath && event.attachmentName) {
-    allAttachments.push({
-      id: 'legacy',
-      fileName: event.attachmentName,
-      storagePath: event.attachmentPath,
-      uploadedAt: event.attachmentTimestamp || event.createdAt,
-      mimeType: undefined,
-    });
-  }
-
-  if (event.attachments) {
-    for (const a of event.attachments) {
-      allAttachments.push({
-        id: a.id,
-        fileName: a.fileName,
-        storagePath: a.storagePath,
-        uploadedAt: a.uploadedAt,
-        mimeType: a.mimeType,
+    // Legacy single attachment
+    if (event.attachmentPath && event.attachmentName) {
+      items.push({
+        id: 'legacy',
+        fileName: event.attachmentName,
+        storagePath: event.attachmentPath,
+        uploadedAt: event.attachmentTimestamp || event.createdAt,
       });
     }
-  }
 
-  // Resolve URLs
-  useMemo(() => {
-    const newUrls: Record<string, string> = {};
-    for (const a of allAttachments) {
-      const { data } = supabase.storage.from('documents').getPublicUrl(a.storagePath);
-      if (data?.publicUrl) newUrls[a.id] = data.publicUrl;
-    }
-    setUrls(newUrls);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event.id, event.attachments?.length]);
+    // Fetch from calendar_event_attachments table
+    supabase
+      .from('calendar_event_attachments')
+      .select('id, storage_path, file_name, uploaded_at')
+      .eq('event_id', event.id)
+      .order('uploaded_at', { ascending: true })
+      .then(({ data }) => {
+        if (data) {
+          for (const a of data) {
+            items.push({
+              id: a.id,
+              fileName: a.file_name,
+              storagePath: a.storage_path,
+              uploadedAt: a.uploaded_at,
+            });
+          }
+        }
+        setAttachments([...items]);
+      });
+  }, [event.id, event.attachmentPath, event.attachmentName, event.attachmentTimestamp, event.createdAt, supabase, loadKey]);
+
+  const getUrl = (storagePath: string) => {
+    const { data } = supabase.storage.from('documents').getPublicUrl(storagePath);
+    return data?.publicUrl || '';
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploading(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
 
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop();
@@ -839,7 +847,6 @@ function EventAttachmentsPanel({
         continue;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
       await supabase.from('calendar_event_attachments').insert({
         event_id: event.id,
         storage_path: path,
@@ -851,7 +858,7 @@ function EventAttachmentsPanel({
 
     setUploading(false);
     e.target.value = '';
-    onUploaded();
+    setLoadKey((k) => k + 1); // Trigger re-fetch
   };
 
   return (
@@ -862,7 +869,7 @@ function EventAttachmentsPanel({
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
           </svg>
           <span className="text-sm font-medium text-foreground">
-            Attachments {allAttachments.length > 0 && `(${allAttachments.length})`}
+            Attachments {attachments.length > 0 && `(${attachments.length})`}
           </span>
         </div>
         <label className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer transition-colors ${
@@ -880,14 +887,14 @@ function EventAttachmentsPanel({
         </label>
       </div>
 
-      {allAttachments.length === 0 && !uploading && (
+      {attachments.length === 0 && !uploading && (
         <p className="text-xs text-muted italic">No attachments yet. Click &quot;+ Add Files&quot; to upload documents or images.</p>
       )}
 
-      {allAttachments.length > 0 && (
+      {attachments.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {allAttachments.map((a) => {
-            const url = urls[a.id];
+          {attachments.map((a) => {
+            const url = getUrl(a.storagePath);
             const ext = a.fileName.split('.').pop()?.toLowerCase();
             const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext || '');
 
